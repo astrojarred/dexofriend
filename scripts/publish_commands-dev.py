@@ -23,7 +23,7 @@ HEADERS = {"Authorization": f"Bot {BOT_TOKEN}"}
 
 # where is the file with the commands stored in s3?
 BUCKET = os.environ.get("AWS_BUCKET")
-KEY = 'commands.json'
+KEY = 'commands-dev.json'
 
 # get the current stage
 STAGE = os.environ.get("STAGE")
