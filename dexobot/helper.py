@@ -480,13 +480,14 @@ def validate_eligibility(db, whitelist_collection, whitelist_info, current_deadl
 
     return not_minted_in_final_jeopardy, selected_in_window, not_minted_yet, whitelisted_before_window
 
-def loading_snail(text="Please wait... Submitting your address to whitelist!", public = False):
+def loader(text="Please wait... Submitting your address to whitelist!", loading_emoji = None, public = False):
 
-    loading_snail = "<a:hoppingsnail:905611122659459092>"
+    if not loading_emoji:
+        loading_emoji = "⏳️"
 
     embed = {
         "type": "rich",
-        "title": f"{loading_snail} {text}",
+        "title": f"{loading_emoji} {text}",
     }
 
     if public:

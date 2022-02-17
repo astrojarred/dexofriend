@@ -26,21 +26,22 @@ def constant(body):
 
     return phrase
 
-"""
+
 def whitelist(body):
 
     # parse the input parameters
     params = helper.parse_options(body["data"]["options"])
 
     user = body["member"]
+    guild_id = body["guild_id"]
 
     # the address they submitted
     address = params["address"]["value"]
 
-    # get valid roles
-    whitelist_role_string = getenv("WHITELIST_ROLES")
-    assert whitelist_role_string
-    whitelist_role_ids = json.loads(whitelist_role_string)
+    # get valid roles - ADD LATER
+    # whitelist_role_string = getenv("WHITELIST_ROLES")
+    # assert whitelist_role_string
+    # whitelist_role_ids = json.loads(whitelist_role_string)
 
     user_roles = user["roles"]
 
@@ -56,10 +57,10 @@ def whitelist(body):
     #         error_message += f"<#{channel_id}> "
     fields = []
 
-    if not any(x in whitelist_role_ids for x in user_roles):
-        error_title = "<:sadfrog:898565061239521291> You don't have permission to whitelist."
-        error_message = "Sorry, the whitelist function is for certain roles only. Please see <#900299272996671518> for more information.\nThank you for your enthusiasm, and stay tuned!"
-    elif address[:4] == "addr" and len(address) < 58:
+    #if not any(x in whitelist_role_ids for x in user_roles):
+    #    error_title = "<:sadfrog:898565061239521291> You don't have permission to whitelist."
+    #    error_message = "Sorry, the whitelist function is for certain roles only. Please see <#900299272996671518> for more information.\nThank you for your enthusiasm, and stay tuned!"
+    if address[:4] == "addr" and len(address) < 58:
         error_title = "<:sadfrog:898565061239521291> There was an error processing your address."
         error_message = f"Address too short!"
         fields.append(
@@ -75,7 +76,7 @@ def whitelist(body):
             "type": "rich",
             "title": error_title,
             "description": error_message,
-            "footer": {"text": "With 💖, Ribbot"},
+            "footer": {"text": "With 💖, DexoBot"},
         }
 
         embed["fields"] = fields
@@ -92,6 +93,8 @@ def whitelist(body):
             "context": "followup",
             "data": {"name": "add_whitelist_entry"},
             "original_body": body,
+            "guild_id": guild_id,
+            "user_permissions": user["permissions"],
             "whitelist_info": {
                 "address": address,
                 "user_id": user["user"]["id"],
@@ -99,7 +102,7 @@ def whitelist(body):
                 "username": user["user"]["username"],
                 "roles": user_roles,
                 "timestamp": dt.datetime.now(dt.timezone.utc).isoformat(),
-                "method": "ribbot",
+                "method": "dexobot",
             },
         }
 
@@ -109,7 +112,7 @@ def whitelist(body):
             Payload=json.dumps(new_entry),
         )
 
-        return helper.loading_snail()
+        return helper.loader()
 
 
 def add_whitelist_entry(body):
@@ -129,6 +132,8 @@ def add_whitelist_entry(body):
     db = firestore.client()
 
     info = body["whitelist_info"]
+    guild_id = body["guild_id"]
+    user_permissions = body["user_permissions"]
 
     # add timestamp
     info["timestamp"] = firestore.SERVER_TIMESTAMP  # dt.datetime.now(dt.timezone.utc)
@@ -149,10 +154,10 @@ def add_whitelist_entry(body):
 
         embed = {
             "type": "rich",
-            "title": "<:ribbot:913093127504535582> Successfully submitted to the whitelist!",
+            "title": "✨ Successfully submitted to the whitelist!",
             "description": f"[**💢 Check your address on pool.pm 💢**]({poolpm})\n**[{info['stake_address']}]({poolpm})**",
             # "author": {"name": "Happy Hoppers Main Drop"},
-            "footer": {"text": "With 💖, Ribbot"},
+            "footer": {"text": "With 💖, DexoBot"},
         }
 
         fields.append(
@@ -178,10 +183,10 @@ def add_whitelist_entry(body):
 
         embed = {
             "type": "rich",
-            "title": "<:sadfrog:898565061239521291> There was an error processing your address!",
+            "title": "😢 There was an error processing your address!",
             "description": f"Most likely you have provided an invalid address. Try resubmitting your address or checking if it looks correct on pool.pm.\nFor further support, please copy or screenshot this error message and open a support ticket.",
             # "author": {"name": "Happy Hoppers Main Drop"},
-            "footer": {"text": "With 💖, Ribbot"},
+            "footer": {"text": "With 💖, DexoBot"},
         }
 
         fields.append(
@@ -205,36 +210,34 @@ def add_whitelist_entry(body):
 
     print(f"Adding to the whitelist: {info}")
 
-    current_whitelist = getenv("CURRENT_WHITELIST")
-
-    assert current_whitelist
+    guild = db.collection("servers").document(guild_id)
 
     # get current info on the whitelist
-    current_info = db.collection(current_whitelist).document(info["user_id"]).get()
+    current_info = guild.collection("whitelist").document(info["user_id"]).get()
 
     if current_info.exists:
         # update the already-existign entry
-        db.collection(current_whitelist).document(str(info["user_id"])).update(info)
+        guild.collection("whitelist").document(str(info["user_id"])).update(info)
 
-        db.collection(f"{current_whitelist}_index").document("stats").update(
+        guild.collection("config").document("stats").update(
             {"n_calls": firestore.Increment(1)}
         )
 
     else:
         # if it's a first addition, add the whitelist date seperately
         info["first_whitelisted"] = info["timestamp"]
-        db.collection(current_whitelist).document(str(info["user_id"])).set(info)
+        guild.collection("whitelist").document(str(info["user_id"])).set(info)
 
         # update the stats dictionary
-        db.collection(f"{current_whitelist}_index").document("stats").update(
+        guild.collection("config").document("stats").update(
             {"n_users": firestore.Increment(1)}
         )
-        db.collection(f"{current_whitelist}_index").document("stats").update(
+        guild.collection("config").document("stats").update(
             {"n_calls": firestore.Increment(1)}
         )
-        db.collection(f"{current_whitelist}_index").document("users").update(
-            {"ids": firestore.ArrayUnion([info["user_id"]])}
-        )
+        # guild.collection("config").document("users").update(
+        #     {"ids": firestore.ArrayUnion([info["user_id"]])}
+        # )
 
     print("Sending discord_update")
     success, response = helper.update_discord_message(
@@ -248,7 +251,7 @@ def add_whitelist_entry(body):
 
     return None
 
-
+"""
 def check_whitelist(body):
 
     user = body["member"]
@@ -280,7 +283,7 @@ def check_whitelist(body):
             "type": "rich",
             "title": error_title,
             "description": error_message,
-            "footer": {"text": "With 💖, Ribbot"},
+            "footer": {"text": "With 💖, DexoBot"},
         }
 
         print(f"ERROR: {error_title} -- {error_message}")
@@ -300,7 +303,7 @@ def check_whitelist(body):
                 "username": user["user"]["username"],
                 "roles": user_roles,
                 "timestamp": dt.datetime.now(dt.timezone.utc).isoformat(),
-                "method": "ribbot",
+                "method": "dexobot",
             },
         }
 
@@ -349,7 +352,7 @@ def check_whitelist_followup(body):
     embed = {
         "type": "rich",
         # "author": {"name": "Happy Hoppers Main Drop"},
-        "footer": {"text": "With 💖, Ribbot"},
+        "footer": {"text": "With 💖, DexoBot"},
     }
 
     if not minter_online:
@@ -358,7 +361,7 @@ def check_whitelist_followup(body):
             if not info["error"]:
                 
                 poolpm = f"https://pool.pm/{info['stake_address']}"
-                title = "<:ribbot:913093127504535582> Found whitelisted address!"
+                title = "<:DexoBot:913093127504535582> Found whitelisted address!"
                 description = f"[**💢 Check your address on pool.pm 💢**]({poolpm})\n**[{info['stake_address']}]({poolpm})**\n\nClick the pool.pm link above and make sure it shows the Cardano wallet you intend to send ADA from to mint."
 
             else:
@@ -410,7 +413,7 @@ def check_whitelist_followup(body):
             if not info["error"]:
                 poolpm = f"https://pool.pm/{info['stake_address']}"
 
-                title = "<:ribbot:913093127504535582> Found whitelisted address!"
+                title = "<:DexoBot:913093127504535582> Found whitelisted address!"
                 description = f"[**💢 Check your address on pool.pm 💢**]({poolpm})\n**[{info['stake_address']}]({poolpm})**\nCheck the link above and make sure it shows the Cardano wallet you intend to send ADA from to mint."
 
                 check_eligibility = True
@@ -434,7 +437,7 @@ def check_whitelist_followup(body):
         # if not has_windows or drop_done:
         if drop_done:
             # minting is over
-            title = "🙏<:ribbot:913093127504535582> The drop is over. Thank you so much for your support!"
+            title = "🙏<:DexoBot:913093127504535582> The drop is over. Thank you so much for your support!"
         elif check_eligibility:
             # check if final jeopardy
             # --> FOR A DROP WITH WINDOWS AND FINAL JEOPARDY
@@ -477,7 +480,7 @@ def check_whitelist_followup(body):
 
             if not_minted_yet:
                 # eligibility_message = f"**YOU CAN MINT!**\nThank you for whitelisting!\nYou are guaranteed a Hopper until the end of the current window (appx. {helper.date_countdown(current_deadline_end)} left).\n"
-                title = "<:ribbot:913093127504535582> You can mint now!"
+                title = "<:DexoBot:913093127504535582> You can mint now!"
             else:
                 # eligibility_message = f"**YOU'VE ALREADY MINTED!** This drop is only one per person.\nThank you so much for participating!"
                 title = "🙏 You have already minted a Hopper. Thank you so much for your support!"
@@ -493,7 +496,7 @@ def check_whitelist_followup(body):
 
             # '''
             # --> FOR A DROP WITH WINDOWS AND FINAL JEOPARDY
-            title = "<:ribbot:913093127504535582> You can mint now!" if mint_right_now else "⏰ Please wait to mint."
+            title = "<:DexoBot:913093127504535582> You can mint now!" if mint_right_now else "⏰ Please wait to mint."
             title = title if not over_for_you else "🙏 This drop is done for you. Thank you!"
 
             # check if window is changing
@@ -606,7 +609,7 @@ def add_wings_followup(body):
             "title": "<:sadfrog:898565061239521291> There was an error processing your address!",
             "description": f"Most likely you have provided an invalid address. Try resubmitting your address or checking if it looks correct on pool.pm.\nFor further support, please copy or screenshot this error message and open a support ticket.",
             # "author": {"name": "Happy Hoppers Main Drop"},
-            "footer": {"text": "With 💖, Ribbot"},
+            "footer": {"text": "With 💖, DexoBot"},
         }
 
         fields.append(
@@ -634,7 +637,7 @@ def add_wings_followup(body):
             "title": "<:sadfrog:898565061239521291> The Hopper ID must be between 1 and 11100!",
             "description": f"1/1s cannot have wings added to them either.",
             # "author": {"name": "Happy Hoppers Main Drop"},
-            "footer": {"text": "With 💖, Ribbot"},
+            "footer": {"text": "With 💖, DexoBot"},
         }
 
         fields.append(
@@ -654,7 +657,7 @@ def add_wings_followup(body):
             "title": "<:sadfrog:898565061239521291> The Swimmer ID given is not a Gold Swimmer!",
             "description": f"Hint: Only swimmers with IDs between 1077 and 1111.",
             # "author": {"name": "Happy Hoppers Main Drop"},
-            "footer": {"text": "With 💖, Ribbot"},
+            "footer": {"text": "With 💖, DexoBot"},
         }
 
         fields.append(
@@ -719,7 +722,7 @@ def add_wings_followup(body):
             "type": "rich",
             "title": "<:sadfrog:898565061239521291> Error reading wallet.",
             "description": f"Please try again, or screenshot this and contact pastaplease.",
-            "footer": {"text": "With 💖, Ribbot"},
+            "footer": {"text": "With 💖, DexoBot"},
         }
 
         fields.append(
@@ -762,7 +765,7 @@ def add_wings_followup(body):
             "type": "rich",
             "title": "<:sadfrog:898565061239521291> " + message,
             "description": f"Check out the wallets below to see which ones hold each token.",
-            "footer": {"text": "With 💖, Ribbot"},
+            "footer": {"text": "With 💖, DexoBot"},
         }
 
         fields.append(
@@ -814,7 +817,7 @@ def add_wings_followup(body):
             "url": "https://" + urllib.parse.quote(f"happyhoppers-s1.s3.us-east-2.amazonaws.com/HappyHoppersS1/{meta['image_name']}")
         },
         "description": f"Please send exactly `{ada_to_send:.6f}` ADA **AND your gold** `SwankySwimmer{swimmer_id}` to the address below.\n**DO NOT SEND THE HOPPER!**",
-        "footer": {"text": "With 💖, Ribbot"},
+        "footer": {"text": "With 💖, DexoBot"},
     }
 
     fields.append(
