@@ -138,6 +138,10 @@ def add_whitelist_entry(body):
     guild_id = body["guild_id"]
     user_permissions = body["user_permissions"]
 
+    guild = db.collection("servers").document(guild_id)
+    whitelist_open, started, ended = helper.check_whitelist_open(guild)
+    print(f"Is open: {whitelist_open}, Started: {started}, Ended: {ended}")
+
     # add timestamp
     info["timestamp"] = firestore.SERVER_TIMESTAMP  # dt.datetime.now(dt.timezone.utc)
 
@@ -146,22 +150,31 @@ def add_whitelist_entry(body):
     address, stake_info, type_provided = helper.parse_address(provided_address)
     # got_stake, stake_info = helper.get_stake_address(info["address"])
 
+    embed = {
+        "type": "rich",
+        "footer": {"text": "With 💖, DexoBot"},
+    }
+
     fields = []
 
-    if stake_info:
+    if not whitelist_open:
+        if not started:
+            title = "⏰ This whitelist is not open yet."
+            description = "Please check back later."
+        else:  # ended
+            title = "⏰ This whitelist is currently closed."
+            description = "Thanks for participating!"
+
+
+    elif stake_info:
         info["stake_address"] = stake_info
         info["ok"] = True
         info["error"] = None
 
         poolpm = f"https://pool.pm/{stake_info}"
 
-        embed = {
-            "type": "rich",
-            "title": "✨ Successfully submitted to the whitelist!",
-            "description": f"[**💢 Check your address on pool.pm 💢**]({poolpm})\n**[{info['stake_address']}]({poolpm})**",
-            # "author": {"name": "Happy Hoppers Main Drop"},
-            "footer": {"text": "With 💖, DexoBot"},
-        }
+        title = "✨ Successfully submitted to the whitelist!"
+        description = f"[**💢 Check your address on pool.pm 💢**]({poolpm})\n**[{info['stake_address']}]({poolpm})**"
 
         fields.append(
             {
@@ -184,13 +197,8 @@ def add_whitelist_entry(body):
         info["ok"] = False
         info["error"] = f"Error calculating stake address: f{stake_info}."
 
-        embed = {
-            "type": "rich",
-            "title": "😢 There was an error processing your address!",
-            "description": f"Most likely you have provided an invalid address. Try resubmitting your address or checking if it looks correct on pool.pm.\nFor further support, please copy or screenshot this error message and open a support ticket.",
-            # "author": {"name": "Happy Hoppers Main Drop"},
-            "footer": {"text": "With 💖, DexoBot"},
-        }
+        title = "😢 There was an error processing your address!"
+        description = f"Most likely you have provided an invalid address. Try resubmitting your address or checking if it looks correct on pool.pm.\nFor further support, please copy or screenshot this error message and open a support ticket."
 
         fields.append(
             {
@@ -208,38 +216,41 @@ def add_whitelist_entry(body):
             },
         )
 
+    embed["title"] = title
+    embed["description"] = description
     embed["fields"] = fields
 
-    print(f"Adding to the whitelist: {info}")
+    if whitelist_open:
+        print(f"Adding to the whitelist: {info}")
 
-    guild = db.collection("servers").document(guild_id)
+        # get current info on the whitelist
+        current_info = guild.collection("whitelist").document(info["user_id"]).get()
 
-    # get current info on the whitelist
-    current_info = guild.collection("whitelist").document(info["user_id"]).get()
+        if current_info.exists:
+            # update the already-existign entry
+            guild.collection("whitelist").document(str(info["user_id"])).update(info)
 
-    if current_info.exists:
-        # update the already-existign entry
-        guild.collection("whitelist").document(str(info["user_id"])).update(info)
+            guild.collection("config").document("stats").update(
+                {"n_calls": firestore.Increment(1)}
+            )
 
-        guild.collection("config").document("stats").update(
-            {"n_calls": firestore.Increment(1)}
-        )
+        else:
+            # if it's a first addition, add the whitelist date seperately
+            info["first_whitelisted"] = info["timestamp"]
+            guild.collection("whitelist").document(str(info["user_id"])).set(info)
 
+            # update the stats dictionary
+            guild.collection("config").document("stats").update(
+                {"n_users": firestore.Increment(1)}
+            )
+            guild.collection("config").document("stats").update(
+                {"n_calls": firestore.Increment(1)}
+            )
+            # guild.collection("config").document("users").update(
+            #     {"ids": firestore.ArrayUnion([info["user_id"]])}
+            # )
     else:
-        # if it's a first addition, add the whitelist date seperately
-        info["first_whitelisted"] = info["timestamp"]
-        guild.collection("whitelist").document(str(info["user_id"])).set(info)
-
-        # update the stats dictionary
-        guild.collection("config").document("stats").update(
-            {"n_users": firestore.Increment(1)}
-        )
-        guild.collection("config").document("stats").update(
-            {"n_calls": firestore.Increment(1)}
-        )
-        # guild.collection("config").document("users").update(
-        #     {"ids": firestore.ArrayUnion([info["user_id"]])}
-        # )
+        print("Whitelist not open, not adding anything.")
 
     print("Sending discord_update")
     success, response = helper.update_discord_message(
@@ -353,7 +364,7 @@ def check_whitelist_followup(body):
     )
     print("User info:", info)
 
-    # check if minter is online
+    # check if WL is open
     whitelist_open, started, ended = helper.check_whitelist_open(guild)
 
     print(f"Is open: {whitelist_open}, Started: {started}, Ended: {ended}")
