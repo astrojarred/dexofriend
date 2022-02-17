@@ -16,13 +16,13 @@ def constant(body):
     which_constant = body["data"]["options"][0]["value"]
 
     if which_constant == "gravity":
-        phrase = "🏋️ The gravitational constant (G) is 6.674 × 10−11 m3/(kg s2). That's actually pretty weak!"
+        phrase = "🏋️ The gravitational constant (G) is `6.674 × 10^−11 m3/(kg s2)`. That's actually pretty weak!"
     elif which_constant == "light":
-        phrase = "⚡️ The speed of light (c) is 2.9979 × 108 m/s. Wow!"
+        phrase = "⚡️ The speed of light (c) is `2.9979 × 10^8 m/s`. Wow!"
     elif which_constant == "parsec":
-        phrase = "🚀 One parsec (pc) is equal to 3.086 × 1016 m or 3.262 light-years. That's a unit of length, dude!"
+        phrase = "🚀 One parsec (pc) is equal to `3.086 × 10^16 m` or `3.262 light-years`. That's a unit of length, dude!"
     elif which_constant == "planck":
-        phrase = "🔬 Planck's Constant (*h*) is 6.62607 × 10−34 J/Hz. No ultraviolet catastrophes here!"
+        phrase = "🔬 Planck's Constant (*h*) is 6`.62607 × 10^−34 J/Hz`. No ultraviolet catastrophes here!"
 
     return phrase
 
