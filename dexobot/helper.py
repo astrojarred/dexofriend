@@ -236,7 +236,7 @@ def get_stake_address(address):
 
 
 # database stuff
-def check_minter_status(db, collection):
+def check_whitelist_open(guild):
 
     try_number = 1
     max_tries = 10
@@ -244,150 +244,30 @@ def check_minter_status(db, collection):
     while not success and try_number <= max_tries:
         try:
             # do stuff here
-            status = db.collection(collection).document("status").get().to_dict()
+            status = guild.collection("config").document("times").get().to_dict()
             success = True
         except Exception as e:
             print(f"Issue connecting to Firebase: {e}")
             try_number += 1
 
-    return status.get("online"), status.get("last_online")
+    begin_time, end_time = status.get("begin"), status.get("end")
+    now = dt.datetime.now(dt.timezone.utc)
 
+    whitelist_open = True
+    started = True
+    ended = False
 
-def get_time_windows(db, collection):
+    if begin_time:
+        if begin_time > now:
+            whitelist_open = False
+            started = False
+        
+    if end_time:
+        if now > end_time:
+            whitelist_open = False
+            ended = True
 
-    try_number = 1
-    max_tries = 10
-    success = False
-    while not success and try_number <= max_tries:
-        try:
-            # do stuff here
-            windows = (
-                db.collection(collection).document("windows").get().to_dict()["windows"]
-            )
-            success = True
-        except Exception as e:
-            print(f"Issue connecting to Firebase: {e}")
-            try_number += 1
-
-    return windows
-
-
-def get_current_deadline(deadline_list: list):
-
-    past_dates = []
-    future_dates = []
-
-    for date in deadline_list:
-        if date > dt.datetime.now(dt.timezone.utc):
-            future_dates.append(date)
-        else:
-            past_dates.append(date)
-
-    past_dates = sorted(past_dates)
-    future_dates = sorted(future_dates)
-
-    current_deadline_start = past_dates[-1]
-    current_deadline_end = future_dates[0]
-
-    current_window_id = deadline_list.index(current_deadline_start) + 1
-
-    return current_deadline_start, current_deadline_end, current_window_id
-
-def check_window_changing(db, collection):
-
-    try_number = 1
-    max_tries = 10
-    success = False
-    while not success and try_number <= max_tries:
-        try:
-            # do stuff here
-            status = db.collection(collection).document("window_change").get().to_dict()
-            success = True
-        except Exception as e:
-            print(f"Issue connecting to Firebase: {e}")
-            try_number += 1
-
-    return status.get("is_changing")
-
-def check_drop_over(db, collection):
-
-    try_number = 1
-    max_tries = 10
-    success = False
-    while not success and try_number <= max_tries:
-        try:
-            # do stuff here
-            status = db.collection(collection).document("minting_over").get().to_dict()
-            success = True
-        except Exception as e:
-            print(f"Issue connecting to Firebase: {e}")
-            try_number += 1
-
-    return status.get("minting_over")
-
-
-def date_countdown(deadline):
-    left = deadline - dt.datetime.now(dt.timezone.utc)
-    return f"{left.days}d {left.seconds // 3600}h {(left.seconds // 60) % 60}m"
-
-
-def is_final_jeopardy(db, collection: str):
-
-    try_number = 1
-    max_tries = 10
-    success = False
-    while not success and try_number <= max_tries:
-        try:
-            # do stuff here
-            info = db.collection(collection).document("final_jeopardy").get().to_dict()
-            success = True
-        except Exception as e:
-            print(f"Issue connecting to Firebase: {e}")
-            try_number += 1
-
-    return info.get("active"), info.get("timestamp")
-
-
-# validators
-def has_not_minted_yet(
-    stake_key, db, tx_out_collection, current_deadline_start, whitelist_id, max_txs_allowed = 5
-):
-
-    try_number = 1
-    max_tries = 10
-    success = False
-    while not success and try_number <= max_tries:
-        try:
-            # do stuff here
-            transactions_by_stake = [
-                item.to_dict()
-                for item in db.collection(tx_out_collection)
-                .where("stake_address", "==", stake_key)
-                .where("type", "==", "success")
-                .stream()
-            ]
-            success = True
-        except Exception as e:
-            print(f"Issue connecting to Firebase: {e}")
-            try_number += 1
-
-    try_number = 1
-    max_tries = 10
-    success = False
-    while not success and try_number <= max_tries:
-        try:
-            # do stuff here
-            transactions_by_user = [
-                item.to_dict()
-                for item in db.collection(tx_out_collection)
-                .where("whitelist_id", "==", whitelist_id)
-                .where("type", "==", "success")
-                .stream()
-            ]
-            success = True
-        except Exception as e:
-            print(f"Issue connecting to Firebase: {e}")
-            try_number += 1
+    return whitelist_open, started, ended
 
     successful_transactions = transactions_by_stake + transactions_by_user
 
