@@ -107,8 +107,8 @@ def run():
     #         publish_command(url, command)
 
     # publish and overwrite new commands
-    # for url in guild_urls:
-    #     overwrite_all_commands(url, commands)
+    for url in guild_urls:
+        overwrite_all_commands(url, commands)
 
     # uncomment to publish globally
     for command in commands:
