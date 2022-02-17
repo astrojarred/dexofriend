@@ -29,5 +29,18 @@
         ]
       }
     ]
+  },
+  {
+    "name": "whitelist",
+    "type": 1,
+    "description": "Whitelist an address [addr, stake, $handle]",
+    "options": [
+      {
+        "name": "address",
+        "description": "Cardano wallet address",
+        "type": 3,
+        "required": 1
+      }
+    ]
   }
 ]
