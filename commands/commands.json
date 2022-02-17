@@ -1,0 +1,33 @@
+[
+  {
+    "name": "constant",
+    "type": 1,
+    "description": "Get data about physical constants.",
+    "options": [
+      {
+        "name": "which",
+        "description": "Which important constant?",
+        "type": 3,
+        "required": 1,
+        "choices": [
+          {
+            "name": "gravity",
+            "value": "gravity"
+          },
+          {
+            "name": "light",
+            "value": "light"
+          },
+          {
+            "name": "parsec",
+            "value": "parsec"
+          },
+          {
+            "name": "planck",
+            "value": "planck"
+          }
+        ]
+      }
+    ]
+  }
+]
