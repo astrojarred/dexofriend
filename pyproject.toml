@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "dexobot-friend"
+version = "0.1.0"
+description = ""
+authors = ["Jarred Green <astrojarred@gmail.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.8"
+PyNaCl = "^1.4.0"
+requests = "^2.26.0"
+tinydb = "^4.5.2"
+boto3 = "^1.20.7"
+firebase-admin = "^5.1.0"
+blockfrost-python = "^0.3.3"
+bech32 = "^1.2.0"
+
+[tool.poetry.dev-dependencies]
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
