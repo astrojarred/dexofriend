@@ -94,11 +94,11 @@ def run():
 
     print(f"UPDATING COMMANDS FOR STAGE {STAGE}")
 
-    if STAGE != "main":
-        # replace command names with altered ones
-        for i, command in enumerate(commands):
-            command_name = command["name"]
-            commands[i]["name"] = f"{command_name}_dev"
+    # if STAGE != "main":
+    #     # replace command names with altered ones
+    #     for i, command in enumerate(commands):
+    #         command_name = command["name"]
+    #         commands[i]["name"] = f"{command_name}_dev"
 
 
     # publish new commands
