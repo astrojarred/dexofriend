@@ -141,5 +141,15 @@
         "max_value": 59
       }
     ]
+  },
+  {
+    "name": "close_whitelist_now",
+    "type": 1,
+    "description": "Immediately close the whitelist."
+  },
+  {
+    "name": "open_whitelist_now",
+    "type": 1,
+    "description": "Immediately open the whitelist."
   }
 ]

@@ -616,3 +616,150 @@ def set_end_time(body):
         print(f"ERROR: Could not update discord messages: {response}")
 
     return None
+
+
+def close_whitelist_now(body):
+
+    # check the whitelist
+    import firebase_admin
+    from firebase_admin import credentials
+    from firebase_admin import firestore
+
+    print("Connecting to firestore.")
+    # Use the application default credentials
+    if not firebase_admin._apps:
+        cert = json.loads(getenv("FIREBASE_CERT"))
+        cred = credentials.Certificate(cert)
+        firebase_app = firebase_admin.initialize_app(cred)
+
+    db = firestore.client()
+
+    guild_id = body["guild_id"]
+    guild = db.collection("servers").document(guild_id)
+
+    print("Setting manually_close to True")
+    guild.collection("config").document("times").update(
+        {"manually_close": True, "manually_open": None}
+    )
+
+    embed = {
+        "type": "rich",
+        "footer": {"text": "With 💖, DexoBot"},
+        "title": "📪️ Whitlist is now closed!",
+        "fields": [
+            {
+                "name": "When?",
+                "value": f"<t:{int(dt.datetime.utcnow().timestamp())}:F> `UTC`",
+                "inline": False,
+            },
+        ],
+    }
+
+    success, response = helper.update_discord_message(
+        body["original_body"]["application_id"],
+        body["original_body"]["token"],
+        {"embeds": [embed]},
+    )
+
+    if success:
+        print(f"Successfully sent update: {embed}")
+    else:
+        print(f"ERROR: Could not update discord messages: {response}")
+
+    return None
+
+
+def open_whitelist_now(body):
+
+    # check the whitelist
+    import firebase_admin
+    from firebase_admin import credentials
+    from firebase_admin import firestore
+
+    print("Connecting to firestore.")
+    # Use the application default credentials
+    if not firebase_admin._apps:
+        cert = json.loads(getenv("FIREBASE_CERT"))
+        cred = credentials.Certificate(cert)
+        firebase_app = firebase_admin.initialize_app(cred)
+
+    db = firestore.client()
+
+    guild_id = body["guild_id"]
+    guild = db.collection("servers").document(guild_id)
+
+    print("Setting manually_open to True")
+    guild.collection("config").document("times").update(
+        {"manually_close": None, "manually_open": True}
+    )
+
+    if body.get("message"):
+        # user clicked a button
+
+        selection = body.get("data").get("custom_id")
+
+        if selection == "confirm":
+
+            embed = {
+                "type": "rich",
+                "footer": {"text": "With 💖, DexoBot"},
+                "title": "📬️ Whitlist is now open!",
+                "fields": [
+                    {
+                        "name": "When?",
+                        "value": f"<t:{int(dt.datetime.utcnow().timestamp())}:F> `UTC`",
+                        "inline": False,
+                    },
+                ],
+            }
+
+        else:
+            embed = {
+                "type": "rich",
+                "footer": {"text": "With 💖, DexoBot"},
+                "title": "😅 Canceled! No changes made",
+            }
+
+        success, response = helper.update_discord_message(
+            body["original_body"]["application_id"],
+            body["original_body"]["token"],
+            {"embeds": [embed]},
+        )
+
+    response = {
+        "content": "Are you absolutely sure?\nThis will open the whitelist *right now* and override any start or end times you have set.",
+        "components": [
+            {
+                "type": 1,
+                "components": [
+                    {
+                        "type": 2,
+                        "label": "Cancel",
+                        "style": 1,
+                        "custom_id": "cancel",
+                        "emoji": {"id": None, "name": "🏃"},
+                    },
+                    {
+                        "type": 2,
+                        "label": "Confirm",
+                        "style": 4,
+                        "custom_id": "confirm",
+                        "emoji": {"id": None, "name": "🙌"},
+                    },
+                ],
+            }
+        ],
+    }
+
+    success, response = helper.update_discord_message(
+        body["original_body"]["application_id"],
+        body["original_body"]["token"],
+        response,
+    )
+
+    if success:
+        print(f"Successfully sent update: {embed}")
+    else:
+        print(f"ERROR: Could not update discord messages: {response}")
+
+    return None

@@ -8,7 +8,9 @@ ALL_COMMANDS = {
     "add_whitelist_entry": bot_manual("add_whitelist_entry", bot.add_whitelist_entry),
     "check_whitelist_followup": bot_manual("check_whitelist_followup", bot.check_whitelist_followup),
     "set_start": bot_manual("set_start", bot.set_start_time, bot.admin_loader),
-    "set_end": bot_manual("set_end", bot.set_end_time, bot.admin_loader)
+    "set_end": bot_manual("set_end", bot.set_end_time, bot.admin_loader),
+    "close_whitelist_now": bot_manual("close_whitelist_now", bot.close_whitelist_now, bot.admin_loader),
+    "open_whitelist_now": bot_manual("open_whitelist_now", bot.open_whitelist_now, bot.admin_loader),
 }
 
 def check_command(body):
