@@ -284,9 +284,13 @@ def add_whitelist_entry(body):
             guild.collection("whitelist").document(str(info["user_id"])).set(info)
 
             # update the stats dictionary
-            guild.collection("config").document("stats").update(
-                {"n_users": firestore.Increment(1)}
-            )
+
+            if stake_info:
+                # only update user count if address was okay
+                guild.collection("config").document("stats").update(
+                    {"n_users": firestore.Increment(1)}
+                )
+
             guild.collection("config").document("stats").update(
                 {"n_calls": firestore.Increment(1)}
             )
