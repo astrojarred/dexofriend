@@ -197,7 +197,6 @@ def add_whitelist_entry(body):
             title = "⏰ This whitelist is currently closed."
             description = "Thanks for participating!"
 
-
     elif stake_info:
         info["stake_address"] = stake_info
         info["ok"] = True
@@ -455,6 +454,128 @@ def check_whitelist_followup(body):
     embed["title"] = title
     embed["description"] = description
     embed["fields"] = fields
+
+    success, response = helper.update_discord_message(
+        body["original_body"]["application_id"],
+        body["original_body"]["token"],
+        {"embeds": [embed]},
+    )
+
+    if success:
+        print(f"Successfully sent update: {embed}")
+    else:
+        print(f"ERROR: Could not update discord messages: {response}")
+
+    return None
+
+def set_start_time(body):
+
+    # check the whitelist
+    import firebase_admin
+    from firebase_admin import credentials
+    from firebase_admin import firestore
+
+    print("Connecting to firestore.")
+    # Use the application default credentials
+    if not firebase_admin._apps:
+        cert = json.loads(getenv("FIREBASE_CERT"))
+        cred = credentials.Certificate(cert)
+        firebase_app = firebase_admin.initialize_app(cred)
+
+    db = firestore.client()
+
+    guild_id = body["guild_id"]
+    guild = db.collection("servers").document(guild_id)
+
+    # parse the input parameters
+    params = helper.parse_options(body["data"]["options"])
+
+    begin_time = dt.datetime(params["year"], params["month"], params["day"], params["hour"], params["minute"], tzinfo=dt.timezone.utc)
+
+    print(f"Got begin time: {begin_time}")
+
+    guild.collection("config").document("times").update({"begin": begin_time})
+
+    print("Updated begin time!")
+
+    embed = {
+        "type": "rich",
+        "footer": {"text": "With 💖, DexoBot"},
+        "title": "⏰ Whitlist starting time set!",
+        "fields": [
+            {
+                "name": "When?",
+                "value": f"<t:{int(begin_time.timestamp())}:F> `UTC`",
+                "inline": False,
+            },
+            {
+                "name": "In how long?",
+                "value": f"<t:{int(begin_time.timestamp())}:R>",
+                "inline": False,
+            },
+        ]
+    }
+
+    success, response = helper.update_discord_message(
+        body["original_body"]["application_id"],
+        body["original_body"]["token"],
+        {"embeds": [embed]},
+    )
+
+    if success:
+        print(f"Successfully sent update: {embed}")
+    else:
+        print(f"ERROR: Could not update discord messages: {response}")
+
+    return None
+
+def set_end_time(body):
+
+    # check the whitelist
+    import firebase_admin
+    from firebase_admin import credentials
+    from firebase_admin import firestore
+
+    print("Connecting to firestore.")
+    # Use the application default credentials
+    if not firebase_admin._apps:
+        cert = json.loads(getenv("FIREBASE_CERT"))
+        cred = credentials.Certificate(cert)
+        firebase_app = firebase_admin.initialize_app(cred)
+
+    db = firestore.client()
+
+    guild_id = body["guild_id"]
+    guild = db.collection("servers").document(guild_id)
+
+    # parse the input parameters
+    params = helper.parse_options(body["data"]["options"])
+
+    end_time = dt.datetime(params["year"], params["month"], params["day"], params["hour"], params["minute"], tzinfo=dt.timezone.utc)
+
+    print(f"Got end time: {end_time}")
+
+    guild.collection("config").document("times").update({"end": end_time})
+
+    print("Updated end time!")
+
+    embed = {
+        "type": "rich",
+        "footer": {"text": "With 💖, DexoBot"},
+        "title": "🏁 Whitlist closing time set!",
+        "fields": [
+            {
+                "name": "When?",
+                "value": f"<t:{int(end_time.timestamp())}:F> `UTC`",
+                "inline": False,
+            },
+            {
+                "name": "In how long?",
+                "value": f"<t:{int(end_time.timestamp())}:R>",
+                "inline": False,
+            },
+        ]
+    }
 
     success, response = helper.update_discord_message(
         body["original_body"]["application_id"],
