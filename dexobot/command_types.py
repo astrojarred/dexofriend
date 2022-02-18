@@ -67,7 +67,8 @@ class bot_manual:
 
         already_responded = False
         if self.loader:
-            if body.get("context") != "followup":
+            if body.get("context") != "followup" or not body.get("message"):
+                # don't show loader if followup *or* if it was a button click
                 print(f"Returning Loader for {self.name}")
                 data = self.loader(body)
                 already_responded = True
