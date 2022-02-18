@@ -273,7 +273,8 @@ def check_whitelist_open(guild):
 def loader(text="Loading...", loading_emoji = None, public = False):
 
     if not loading_emoji:
-        loading_emoji = "⏳️"
+        # loading_emoji = "⏳️"
+        loading_emoji = "<a:pingpongloading:869290575118082078>"
 
     embed = {
         "type": "rich",
