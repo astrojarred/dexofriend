@@ -639,7 +639,7 @@ def close_whitelist_now(body):
 
     print("Setting manually_close to True")
     guild.collection("config").document("times").update(
-        {"manually_close": True, "manually_open": None}
+        {"begin": None, "end": firestore.SERVER_TIMESTAMP}
     )
 
     embed = {
@@ -688,17 +688,16 @@ def open_whitelist_now(body):
     guild_id = body["guild_id"]
     guild = db.collection("servers").document(guild_id)
 
-    print("Setting manually_open to True")
-    guild.collection("config").document("times").update(
-        {"manually_close": None, "manually_open": True}
-    )
-
     if body.get("message"):
         # user clicked a button
 
         selection = body.get("data").get("custom_id")
 
         if selection == "confirm":
+
+            guild.collection("config").document("times").update(
+                {"begin": firestore.SERVER_TIMESTAMP, "end": None}
+            )
 
             embed = {
                 "type": "rich",
@@ -720,14 +719,18 @@ def open_whitelist_now(body):
                 "title": "😅 Canceled! No changes made",
             }
 
-        success, response = helper.update_discord_message(
-            body["original_body"]["application_id"],
-            body["original_body"]["token"],
-            {"embeds": [embed]},
-        )
+        return {"embeds": [embed], "flags": 64}
 
     response = {
-        "content": "Are you absolutely sure?\nThis will open the whitelist *right now* and override any start or end times you have set.",
+        "flags": 64,
+        "embeds": [
+            {
+                "type": "rich",
+                "title": "Are you absolutely sure?",
+                "description": "This will open the whitelist *right now* and overwrite any start or end times you have set.\nYou will also have to set your ending time again if you had one set.",
+                "footer": {"text": "With 💖, DexoBot"},
+            }
+        ],
         "components": [
             {
                 "type": 1,
@@ -758,7 +761,7 @@ def open_whitelist_now(body):
     )
 
     if success:
-        print(f"Successfully sent update: {embed}")
+        print(f"Successfully sent update: {response}")
     else:
         print(f"ERROR: Could not update discord messages: {response}")
 
