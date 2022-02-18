@@ -847,6 +847,10 @@ def get_whitelist_info(body):
     stats = guild.collection("config").document("stats").get().to_dict()
     times = guild.collection("config").document("times").get().to_dict()
     channel = guild.collection("config").document("channel").get().to_dict()
+    
+    start_timestamp = f"<t:{int(times.get('begin').timestamp())}:R>" if times.get('begin') else "None set"
+    end_timestamp = f"<t:{int(times.get('end').timestamp())}:R>" if times.get('end') else "None set"
+    active_channel = f"<#{channel.get('active')}>" if channel.get("active") else "None set"
 
     embed = {
         "type": "rich",
@@ -856,22 +860,27 @@ def get_whitelist_info(body):
             {
                 "name": "Total users",
                 "value": f"{stats['n_users']}",
-                "inline": True,
+                "inline": False,
             },
+            # {
+            #     "name": "Total user functions executed",
+            #     "value": f"{stats['n_calls']}",
+            #     "inline": False,
+            # },
             {
-                "name": "Total user functions executed",
-                "value": f"{stats['n_calls']}",
-                "inline": True,
+                "name": "Whitelist Channel",
+                "value": active_channel,
+                "inline": False,
             },
             {
                 "name": "Whitelist opening time",
-                "value": f"{times['begin']}",
-                "inline": True,
+                "value": start_timestamp,
+                "inline": False,
             },
             {
                 "name": "Whitelist closing time",
-                "value": f"{times['end']}",
-                "inline": True,
+                "value": end_timestamp,
+                "inline": False,
             },
         ],
     }
