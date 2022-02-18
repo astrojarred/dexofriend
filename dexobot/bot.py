@@ -363,7 +363,7 @@ def check_whitelist(body):
             Payload=json.dumps(new_entry),
         )
 
-        return helper.loader("Please wait... Checking the whitelist for you!")
+        return helper.loader("Please wait. I'm checking the whitelist for you!")
 
 
 def check_whitelist_followup(body):
