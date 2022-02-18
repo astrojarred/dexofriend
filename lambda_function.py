@@ -1,4 +1,5 @@
 import os
+import traceback
 
 from nacl.signing import VerifyKey
 
@@ -61,10 +62,12 @@ def lambda_handler(event, context):
         else:
             body = event
     except Exception as e:
+        tb = traceback.format_exc()
+        print(f"[ERROR]\n{e}\n\nTraceback:\n{tb}")
         return {
             "type": 4,
             "data": {
-                "content": f"There was an error during initialization!\n```python\n{e}\n```", "flags": 64
+                "content": f"There was an error during initialization!\n```python\n{e}\n\n# Traceback:\n{tb}```", "flags": 64
             }
         }
 
@@ -73,10 +76,12 @@ def lambda_handler(event, context):
     try:
         return commands.check_command(body)
     except Exception as e:
+        tb = traceback.format_exc()
+        print(f"[ERROR]\n{e}\n\nTraceback:\n{tb}")
         return {
             "type": 4,
             "data": {
-                "content": f"There was an error!\n```python\n{e}\n```", "flags": 64
+                "content": f"There was an error!\n```python\n{e}\n\n# Traceback:\n{tb}```", "flags": 64
             }
         }
 
