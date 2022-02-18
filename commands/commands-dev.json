@@ -156,5 +156,18 @@
     "name": "info",
     "type": 1,
     "description": "Show information about the whitelist."
+  },
+  {
+    "name": "set_channel",
+    "type": 1,
+    "description": "Restrict the whitelist to a channel.",
+    "options": [
+      {
+        "name": "channel",
+        "description": "Channel where the magic will happen",
+        "type": 7,
+        "required": 1
+      }
+    ]
   }
 ]
