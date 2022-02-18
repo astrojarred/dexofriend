@@ -207,7 +207,7 @@ def add_whitelist_entry(body):
 
     if not correct_channel:
         title = "😱 Whitelist features are not allowed in this channel."
-        description = "Please check with the mods if you are confused."
+        description = "Please check with the mods if you are unsure."
 
     elif not whitelist_open:
         if not started:
@@ -437,7 +437,7 @@ def check_whitelist_followup(body):
     # if WL not open yet
     if not correct_channel:
         title = "😱 Whitelist features are not allowed in this channel."
-        description = "Please check with the mods if you are confused."
+        description = "Please check with the mods if you are unsure."
 
     elif not started:
         title = "⏰ Whitelist is not open yet."
