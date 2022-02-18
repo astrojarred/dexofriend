@@ -897,3 +897,28 @@ def get_whitelist_info(body):
         print(f"ERROR: Could not update discord messages: {response}")
 
     return None
+
+
+def set_channel(body):
+
+    # check the whitelist
+    import firebase_admin
+    from firebase_admin import credentials
+    from firebase_admin import firestore
+
+    print("Connecting to firestore.")
+    # Use the application default credentials
+    if not firebase_admin._apps:
+        cert = json.loads(getenv("FIREBASE_CERT"))
+        cred = credentials.Certificate(cert)
+        firebase_app = firebase_admin.initialize_app(cred)
+
+    db = firestore.client()
+
+    guild_id = body["guild_id"]
+    guild = db.collection("servers").document(guild_id)
+
+    params = helper.parse_options(body["data"]["options"])
+
+    print("PARAMS")
+    print(params)
