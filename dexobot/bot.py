@@ -847,10 +847,18 @@ def get_whitelist_info(body):
     stats = guild.collection("config").document("stats").get().to_dict()
     times = guild.collection("config").document("times").get().to_dict()
     channel = guild.collection("config").document("channel").get().to_dict()
-    
-    start_timestamp = f"<t:{int(times.get('begin').timestamp())}:F>" if times.get('begin') else "None set"
-    end_timestamp = f"<t:{int(times.get('end').timestamp())}:F>" if times.get('end') else "None set"
-    active_channel = f"<#{channel.get('active')}>" if channel.get("active") else "None set"
+
+    start_timestamp = (
+        f"<t:{int(times.get('begin').timestamp())}:F>"
+        if times.get("begin")
+        else "None set"
+    )
+    end_timestamp = (
+        f"<t:{int(times.get('end').timestamp())}:F>" if times.get("end") else "None set"
+    )
+    active_channel = (
+        f"<#{channel.get('active')}>" if channel.get("active") else "None set"
+    )
 
     embed = {
         "type": "rich",
@@ -920,5 +928,29 @@ def set_channel(body):
 
     params = helper.parse_options(body["data"]["options"])
 
-    print("PARAMS")
-    print(params)
+    current_info = guild.collection("config").document("channel").get().to_dict()
+    current_channel = current_info.get("active")
+
+    new_channel = params["channel"]["value"]
+
+    if current_channel:
+        if current_channel == new_channel:
+            title = f"🤔 Whitelist channel is already set to <#{new_channel}>"
+    else:
+        guild.collection("config").document("channel").set({"active": new_channel})
+        title = f"🤝 Set whitelist channel to <#{new_channel}>!"
+
+    embed = {"type": "rich", "footer": {"text": "With 💖, DexoBot"}, "title": title}
+
+    success, response = helper.update_discord_message(
+        body["original_body"]["application_id"],
+        body["original_body"]["token"],
+        {"embeds": [embed]},
+    )
+
+    if success:
+        print(f"Successfully sent update: {embed}")
+    else:
+        print(f"ERROR: Could not update discord messages: {response}")
+
+    return None
