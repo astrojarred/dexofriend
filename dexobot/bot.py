@@ -25,7 +25,13 @@ def constant(body):
     elif which_constant == "planck":
         phrase = "🔬 Planck's Constant (*h*) is 6`.62607 × 10^−34 J/Hz`. No ultraviolet catastrophes here!"
 
-    return phrase
+    embed = {
+        "type": "rich",
+        "title": phrase,
+        "footer": {"text": "With 💖, DexoBot"},
+    }
+
+    return {"embeds": [embed], "flags": 64}
 
 
 def admin_loader(body):
