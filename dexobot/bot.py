@@ -184,6 +184,9 @@ def add_whitelist_entry(body):
     user_permissions = body["user_permissions"]
 
     guild = db.collection("servers").document(guild_id)
+
+    correct_channel = helper.check_channel(guild, body["original_body"]["channel_id"])
+
     whitelist_open, started, ended = helper.check_whitelist_open(guild)
     print(f"Is open: {whitelist_open}, Started: {started}, Ended: {ended}")
 
@@ -202,7 +205,11 @@ def add_whitelist_entry(body):
 
     fields = []
 
-    if not whitelist_open:
+    if not correct_channel:
+        title = "😱 Whitelist features are not allowed in this channel."
+        description = "Please check with the mods if you are confused."
+
+    elif not whitelist_open:
         if not started:
             title = "⏰ This whitelist is not open yet."
             description = "Please check back later."
@@ -264,7 +271,7 @@ def add_whitelist_entry(body):
     embed["description"] = description
     embed["fields"] = fields
 
-    if whitelist_open:
+    if whitelist_open and correct_channel:
         print(f"Adding to the whitelist: {info}")
 
         # get current info on the whitelist
@@ -298,7 +305,7 @@ def add_whitelist_entry(body):
             #     {"ids": firestore.ArrayUnion([info["user_id"]])}
             # )
     else:
-        print("Whitelist not open, not adding anything.")
+        print("Whitelist not open or incorrect channel, not adding anything.")
 
     print("Sending discord_update")
     success, response = helper.update_discord_message(
@@ -402,6 +409,8 @@ def check_whitelist_followup(body):
     guild_id = body["guild_id"]
     guild = db.collection("servers").document(guild_id)
 
+    correct_channel = helper.check_channel(guild, body["original_body"]["channel_id"])
+
     whitelist_info = body["whitelist_info"]
 
     info = (
@@ -425,7 +434,11 @@ def check_whitelist_followup(body):
     }
 
     # if WL not open yet
-    if not started:
+    if not correct_channel:
+        title = "😱 Whitelist features are not allowed in this channel."
+        description = "Please check with the mods if you are confused."
+        
+    elif not started:
         title = "⏰ Whitelist is not open yet."
         description = "Please check back later."
 

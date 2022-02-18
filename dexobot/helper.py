@@ -404,3 +404,15 @@ class permissions():
     def is_manager(user_permissions, permission_to_check = MANAGE_ROLES):
         
         return (int(user_permissions) & permission_to_check) == permission_to_check
+
+def check_channel(guild_db, current_channel):
+
+    current_info = guild_db.collection("config").document("channel").get().to_dict()
+    active_channel = current_info.get("active")
+
+    if not active_channel:
+        return True
+    if current_channel != active_channel:
+        return False
+    else:
+        return True
