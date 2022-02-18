@@ -41,7 +41,9 @@ def admin_loader(body):
 
     if not authorized:
         print("NOT AUTHORIZED")
-        return helper.loader("You are not authorized to run this command", loader_emoji="🛑")
+        return helper.loader(
+            "You are not authorized to run this command", loader_emoji="🛑"
+        )
     else:
         print("USER AUTHORIZED :)")
 
@@ -473,6 +475,7 @@ def check_whitelist_followup(body):
 
     return None
 
+
 def set_start_time(body):
 
     # check the whitelist
@@ -499,7 +502,14 @@ def set_start_time(body):
     params = helper.parse_options(body["data"]["options"])
     print("PARAMS:", params)
 
-    begin_time = dt.datetime(params["year"], params["month"], params["day"], params["hour"], params["minute"], tzinfo=dt.timezone.utc)
+    begin_time = dt.datetime(
+        params["year"]["value"],
+        params["month"]["value"],
+        params["day"]["value"],
+        params["hour"]["value"],
+        params["minute"]["value"],
+        tzinfo=dt.timezone.utc,
+    )
 
     print(f"Got begin time: {begin_time}")
 
@@ -522,7 +532,7 @@ def set_start_time(body):
                 "value": f"<t:{int(begin_time.timestamp())}:R>",
                 "inline": False,
             },
-        ]
+        ],
     }
 
     success, response = helper.update_discord_message(
@@ -537,6 +547,7 @@ def set_start_time(body):
         print(f"ERROR: Could not update discord messages: {response}")
 
     return None
+
 
 def set_end_time(body):
 
@@ -560,7 +571,14 @@ def set_end_time(body):
     # parse the input parameters
     params = helper.parse_options(body["data"]["options"])
 
-    end_time = dt.datetime(params["year"], params["month"], params["day"], params["hour"], params["minute"], tzinfo=dt.timezone.utc)
+    end_time = dt.datetime(
+        params["year"]["value"],
+        params["month"]["value"],
+        params["day"]["value"],
+        params["hour"]["value"],
+        params["minute"]["value"],
+        tzinfo=dt.timezone.utc,
+    )
 
     print(f"Got end time: {end_time}")
 
@@ -583,7 +601,7 @@ def set_end_time(body):
                 "value": f"<t:{int(end_time.timestamp())}:R>",
                 "inline": False,
             },
-        ]
+        ],
     }
 
     success, response = helper.update_discord_message(
