@@ -40,25 +40,43 @@ def lambda_handler(event, context):
     print(f"event {event}")  # debug print
 
     # check if a this is a followup call
-    if event.get("context") != "followup":  # and (not is_component_click):
-        # verify the signature
-        try:
-            verify_signature(event)
+    try:
+        if event.get("context") != "followup":  # and (not is_component_click):
+            # verify the signature
+            try:
+                verify_signature(event)
 
-        except Exception as e:
-            raise Exception(f"[UNAUTHORIZED] Invalid request signature: {e}")
-    else:
-        print("Followup event!")
+            except Exception as e:
+                raise Exception(f"[UNAUTHORIZED] Invalid request signature: {e}")
+        else:
+            print("Followup event!")
 
-    if event.get("context") != "followup":
-        # check if message is a ping
-        body = event.get("body-json")
-        if ping_pong(body):
-            return PING_PONG
+        if event.get("context") != "followup":
+            # check if message is a ping
+            body = event.get("body-json")
+            if ping_pong(body):
+                return PING_PONG
 
-        body["invoked-function-arn"] = context.invoked_function_arn
-    else:
-        body = event
+            body["invoked-function-arn"] = context.invoked_function_arn
+        else:
+            body = event
+    except Exception as e:
+        return {
+            "type": 4,
+            "data": {
+                "content": f"There was an error during initialization!\n```python\n{e}\n```", "flags": 64
+            }
+        }
+
 
     # run the command
-    return commands.check_command(body)
+    try:
+        return commands.check_command(body)
+    except Exception as e:
+        return {
+            "type": 4,
+            "data": {
+                "content": f"There was an error!\n```python\n{e}\n```", "flags": 64
+            }
+        }
+
