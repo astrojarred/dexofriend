@@ -47,5 +47,99 @@
     "name": "check_whitelist",
     "type": 1,
     "description": "Check your whitelist status."
+  },
+  {
+    "name": "set_start",
+    "type": 1,
+    "description": "[UTC!] Set the opening time of your whitelist.",
+    "options": [
+      {
+        "name": "year",
+        "description": "4-digit year",
+        "type": 4,
+        "required": 1,
+        "min_value": 2022,
+        "max_value": 2025
+      },
+      {
+        "name": "month",
+        "description": "[1-12] Month of the year",
+        "type": 4,
+        "required": 1,
+        "min_value": 1,
+        "max_value": 12
+      },
+      {
+        "name": "day",
+        "description": "[1-31] Day of the month",
+        "type": 4,
+        "required": 1,
+        "min_value": 1,
+        "max_value": 31
+      },
+      {
+        "name": "hour",
+        "description": "[0-23] *UTC and 24-hour time*",
+        "type": 4,
+        "required": 1,
+        "min_value": 0,
+        "max_value": 23
+      },
+      {
+        "name": "minute",
+        "description": "[0-59] *UTC and 24-hour time*",
+        "type": 4,
+        "required": 1,
+        "min_value": 0,
+        "max_value": 59
+      }
+    ]
+  },
+  {
+    "name": "set_end",
+    "type": 1,
+    "description": "[UTC!] Set the closing time of your whitelist.",
+    "options": [
+      {
+        "name": "year",
+        "description": "4-digit year",
+        "type": 4,
+        "required": 1,
+        "min_value": 2022,
+        "max_value": 2025
+      },
+      {
+        "name": "month",
+        "description": "[1-12] Month of the year",
+        "type": 4,
+        "required": 1,
+        "min_value": 1,
+        "max_value": 12
+      },
+      {
+        "name": "day",
+        "description": "[1-31] Day of the month",
+        "type": 4,
+        "required": 1,
+        "min_value": 1,
+        "max_value": 31
+      },
+      {
+        "name": "hour",
+        "description": "[0-23] *UTC and 24-hour time*",
+        "type": 4,
+        "required": 1,
+        "min_value": 0,
+        "max_value": 23
+      },
+      {
+        "name": "minute",
+        "description": "[0-59] *UTC and 24-hour time*",
+        "type": 4,
+        "required": 1,
+        "min_value": 0,
+        "max_value": 59
+      }
+    ]
   }
 ]
