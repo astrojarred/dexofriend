@@ -50,7 +50,7 @@ def admin_loader(body):
     new_entry = {
         "context": "followup",
         "data": body["data"],
-        "user": user,
+        "member": user,
         "guild_id": body["guild_id"],
         "user_permissions": permissions,
         "timestamp": dt.datetime.now(dt.timezone.utc).isoformat(),
