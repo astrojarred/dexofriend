@@ -28,6 +28,38 @@ def constant(body):
     return phrase
 
 
+def admin_loader(body):
+
+    user = body["member"]
+    permissions = user["permissions"]
+
+    lam = client("lambda")
+
+    # check for management permissions
+    authorized = helper.permissions.is_manager(permissions)
+
+    if not authorized:
+        return helper.loader("You are not authorized to run this command", loader_emoji="🛑")
+
+    new_entry = {
+        "context": "followup",
+        "data": body["data"],
+        "user": user,
+        "guild_id": body["guild_id"],
+        "user_permissions": permissions,
+        "timestamp": dt.datetime.now(dt.timezone.utc).isoformat(),
+        "original_body": body,
+    }
+
+    lam.invoke(
+        FunctionName=body["invoked-function-arn"],
+        InvocationType="Event",
+        Payload=json.dumps(new_entry),
+    )
+
+    return helper.loader("Loading... DexoBot Friend is here to help!")
+
+
 def whitelist(body):
 
     # parse the input parameters
