@@ -487,13 +487,17 @@ def set_start_time(body):
         cred = credentials.Certificate(cert)
         firebase_app = firebase_admin.initialize_app(cred)
 
+    print("loading DB")
     db = firestore.client()
 
+    print("getting guild ID")
     guild_id = body["guild_id"]
     guild = db.collection("servers").document(guild_id)
 
+    print("Getting params")
     # parse the input parameters
     params = helper.parse_options(body["data"]["options"])
+    print("PARAMS:", params)
 
     begin_time = dt.datetime(params["year"], params["month"], params["day"], params["hour"], params["minute"], tzinfo=dt.timezone.utc)
 
