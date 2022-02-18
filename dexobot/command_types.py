@@ -69,7 +69,7 @@ class bot_manual:
         if self.loader:
             if body.get("context") != "followup":
                 print(f"Returning Loader for {self.name}")
-                data = self.loader()
+                data = self.loader(body)
                 already_responded = True
 
         if not already_responded:
