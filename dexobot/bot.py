@@ -524,7 +524,7 @@ def set_start_time(body):
         "fields": [
             {
                 "name": "When?",
-                "value": f"<t:{int(begin_time.timestamp())}:F> `UTC`",
+                "value": f"<t:{int(begin_time.timestamp())}:F>",
                 "inline": False,
             },
             {
@@ -593,7 +593,7 @@ def set_end_time(body):
         "fields": [
             {
                 "name": "When?",
-                "value": f"<t:{int(end_time.timestamp())}:F> `UTC`",
+                "value": f"<t:{int(end_time.timestamp())}:F>",
                 "inline": False,
             },
             {
@@ -620,7 +620,6 @@ def set_end_time(body):
 
 def close_whitelist_now(body):
 
-    # check the whitelist
     import firebase_admin
     from firebase_admin import credentials
     from firebase_admin import firestore
@@ -637,32 +636,80 @@ def close_whitelist_now(body):
     guild_id = body["guild_id"]
     guild = db.collection("servers").document(guild_id)
 
-    print("Setting manually_close to True")
-    guild.collection("config").document("times").update(
-        {"begin": None, "end": firestore.SERVER_TIMESTAMP}
-    )
+    if body.get("message"):
+        # user clicked a button
 
-    embed = {
-        "type": "rich",
-        "footer": {"text": "With 💖, DexoBot"},
-        "title": "📪️ Whitlist is now closed!",
-        "fields": [
+        selection = body.get("data").get("custom_id")
+
+        if selection == "confirm":
+
+            guild.collection("config").document("times").update(
+                {"begin": None, "end": firestore.SERVER_TIMESTAMP}
+            )
+
+            embed = {
+                "type": "rich",
+                "footer": {"text": "With 💖, DexoBot"},
+                "title": "📪️ Whitlist is now Closed!",
+                "fields": [
+                    {
+                        "name": "Since?",
+                        "value": f"<t:{int(dt.datetime.utcnow().timestamp())}:F>",
+                        "inline": False,
+                    },
+                ],
+            }
+
+        else:
+            embed = {
+                "type": "rich",
+                "footer": {"text": "With 💖, DexoBot"},
+                "title": "😅 Canceled! No changes made",
+            }
+
+        return {"embeds": [embed], "flags": 64}
+
+    response = {
+        "flags": 64,
+        "embeds": [
             {
-                "name": "When?",
-                "value": f"<t:{int(dt.datetime.utcnow().timestamp())}:F> `UTC`",
-                "inline": False,
-            },
+                "type": "rich",
+                "title": "Are you absolutely sure?",
+                "description": "This will close the whitelist *right now* and overwrite any start or end times you currently have set.",
+                "footer": {"text": "With 💖, DexoBot"},
+            }
+        ],
+        "components": [
+            {
+                "type": 1,
+                "components": [
+                    {
+                        "type": 2,
+                        "label": "Cancel",
+                        "style": 1,
+                        "custom_id": "cancel",
+                        "emoji": {"id": None, "name": "🏃"},
+                    },
+                    {
+                        "type": 2,
+                        "label": "Confirm",
+                        "style": 4,
+                        "custom_id": "confirm",
+                        "emoji": {"id": None, "name": "🙌"},
+                    },
+                ],
+            }
         ],
     }
 
     success, response = helper.update_discord_message(
         body["original_body"]["application_id"],
         body["original_body"]["token"],
-        {"embeds": [embed]},
+        response,
     )
 
     if success:
-        print(f"Successfully sent update: {embed}")
+        print(f"Successfully sent update: {response}")
     else:
         print(f"ERROR: Could not update discord messages: {response}")
 
@@ -705,8 +752,8 @@ def open_whitelist_now(body):
                 "title": "📬️ Whitlist is now open!",
                 "fields": [
                     {
-                        "name": "When?",
-                        "value": f"<t:{int(dt.datetime.utcnow().timestamp())}:F> `UTC`",
+                        "name": "Since?",
+                        "value": f"<t:{int(dt.datetime.utcnow().timestamp())}:F>",
                         "inline": False,
                     },
                 ],
@@ -727,7 +774,7 @@ def open_whitelist_now(body):
             {
                 "type": "rich",
                 "title": "Are you absolutely sure?",
-                "description": "This will open the whitelist *right now* and overwrite any start or end times you have set.\nYou will also have to set your ending time again if you had one set.",
+                "description": "This will close the whitelist *right now* and overwrite any start or end times you currently have set.",
                 "footer": {"text": "With 💖, DexoBot"},
             }
         ],
