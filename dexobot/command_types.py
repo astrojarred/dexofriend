@@ -54,13 +54,11 @@ class bot_embed:
 class bot_manual:
     """Manually return data fields"""
 
-    def __init__(self, name, action, loader=None, loader_text=None, loader_emoji=None, response_type=4):
+    def __init__(self, name, action, loader=None, response_type=4):
 
         self.name = name
         self.action = action
         self.loader = loader
-        self.loader_text = loader_text
-        self.loader_emoji = loader_emoji
         self.response_type = response_type
 
     def run(self, body):
@@ -71,7 +69,7 @@ class bot_manual:
         if self.loader:
             if body.get("context") != "followup":
                 print(f"Returning Loader for {self.name}")
-                data = self.loader(text=self.loader_text, loading_emoji=self.loader_emoji)
+                data = self.loader()
                 already_responded = True
 
         if not already_responded:
