@@ -848,8 +848,8 @@ def get_whitelist_info(body):
     times = guild.collection("config").document("times").get().to_dict()
     channel = guild.collection("config").document("channel").get().to_dict()
     
-    start_timestamp = f"<t:{int(times.get('begin').timestamp())}:R>" if times.get('begin') else "None set"
-    end_timestamp = f"<t:{int(times.get('end').timestamp())}:R>" if times.get('end') else "None set"
+    start_timestamp = f"<t:{int(times.get('begin').timestamp())}:F>" if times.get('begin') else "None set"
+    end_timestamp = f"<t:{int(times.get('end').timestamp())}:F>" if times.get('end') else "None set"
     active_channel = f"<#{channel.get('active')}>" if channel.get("active") else "None set"
 
     embed = {
