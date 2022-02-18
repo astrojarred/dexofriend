@@ -42,5 +42,10 @@
         "required": 1
       }
     ]
+  },
+  {
+    "name": "check_whitelist",
+    "type": 1,
+    "description": "Check your whitelist status."
   }
 ]
