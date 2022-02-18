@@ -48,7 +48,7 @@ def admin_loader(body):
     if not authorized:
         print("NOT AUTHORIZED")
         return helper.loader(
-            "You are not authorized to run this command", loader_emoji="🛑"
+            "You are not authorized to run this command", loading_emoji="🛑"
         )
     else:
         print("USER AUTHORIZED :)")
@@ -952,7 +952,7 @@ def set_channel(body):
         if current_channel == new_channel:
             title = f"🤔 Whitelist is already set to this channel."
             description = f"Channel: <#{new_channel}>"
-            
+
     if not title:
         guild.collection("config").document("channel").set({"active": new_channel})
         title = f"🤝 Successfully set the whitelist channel!"
