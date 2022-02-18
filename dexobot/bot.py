@@ -115,7 +115,7 @@ def whitelist(body):
             Payload=json.dumps(new_entry),
         )
 
-        return helper.loader()
+        return helper.loader("Please wait... Submitting your address to whitelist!")
 
 
 def add_whitelist_entry(body):
@@ -332,7 +332,7 @@ def check_whitelist(body):
             Payload=json.dumps(new_entry),
         )
 
-        return helper.loading_snail("Please wait... Checking the whitelist for you!")
+        return helper.loader("Please wait... Checking the whitelist for you!")
 
 
 def check_whitelist_followup(body):

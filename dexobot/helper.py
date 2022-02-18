@@ -270,7 +270,7 @@ def check_whitelist_open(guild):
     return whitelist_open, started, ended
 
 
-def loader(text="Please wait... Submitting your address to whitelist!", loading_emoji = None, public = False):
+def loader(text="Loading...", loading_emoji = None, public = False):
 
     if not loading_emoji:
         loading_emoji = "⏳️"
