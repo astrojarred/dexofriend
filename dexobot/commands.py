@@ -4,9 +4,9 @@ from dexobot.command_types import bot_command, bot_embed, bot_followup, bot_manu
 ALL_COMMANDS = {
     "constant": bot_command("constant", bot.constant),
     "whitelist": bot_manual("whitelist", bot.whitelist),
-    # "check_whitelist": bot_manual("check_whitelist", bot.check_whitelist),
+    "check_whitelist": bot_manual("check_whitelist", bot.check_whitelist),
     "add_whitelist_entry": bot_manual("add_whitelist_entry", bot.add_whitelist_entry),
-    # "check_whitelist_followup": bot_manual("check_whitelist_followup", bot.check_whitelist_followup),
+    "check_whitelist_followup": bot_manual("check_whitelist_followup", bot.check_whitelist_followup),
 }
 
 def check_command(body):
@@ -25,6 +25,6 @@ def check_command(body):
         return {
             "type": 4,
             "data": {
-                "content": f"Command does not exist."
+                "content": f"Command does not exist.", "flags": 64
             }
         }
