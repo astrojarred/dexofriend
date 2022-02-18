@@ -55,7 +55,7 @@ def admin_loader(body):
         "original_body": body,
     }
 
-    pinrt("invoking lambda...")
+    print("invoking lambda...")
     lam.invoke(
         FunctionName=body["invoked-function-arn"],
         InvocationType="Event",
