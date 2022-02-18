@@ -151,5 +151,10 @@
     "name": "open_whitelist_now",
     "type": 1,
     "description": "Immediately open the whitelist."
+  },
+  {
+    "name": "info",
+    "type": 1,
+    "description": "Show information about the whitelist."
   }
 ]

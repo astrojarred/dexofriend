@@ -823,3 +823,68 @@ def open_whitelist_now(body):
         print(f"ERROR: Could not update discord messages: {response}")
 
     return None
+
+
+def get_whitelist_info(body):
+
+    # check the whitelist
+    import firebase_admin
+    from firebase_admin import credentials
+    from firebase_admin import firestore
+
+    print("Connecting to firestore.")
+    # Use the application default credentials
+    if not firebase_admin._apps:
+        cert = json.loads(getenv("FIREBASE_CERT"))
+        cred = credentials.Certificate(cert)
+        firebase_app = firebase_admin.initialize_app(cred)
+
+    db = firestore.client()
+
+    guild_id = body["guild_id"]
+    guild = db.collection("servers").document(guild_id)
+
+    stats = guild.collection("config").document("stats").get().to_dict()
+    times = guild.collection("config").document("times").get().to_dict()
+    channel = guild.collection("config").document("channel").get().to_dict()
+
+    embed = {
+        "type": "rich",
+        "footer": {"text": "With 💖, DexoBot"},
+        "title": "🤓 Whitelist information for your server:",
+        "fields": [
+            {
+                "name": "Total users",
+                "value": f"{stats['n_users']}",
+                "inline": True,
+            },
+            {
+                "name": "Total user functions executed",
+                "value": f"{stats['n_calls']}",
+                "inline": True,
+            },
+            {
+                "name": "Whitelist opening time",
+                "value": f"{times['begin']}",
+                "inline": True,
+            },
+            {
+                "name": "Whitelist closing time",
+                "value": f"{times['end']}",
+                "inline": True,
+            },
+        ],
+    }
+
+    success, response = helper.update_discord_message(
+        body["original_body"]["application_id"],
+        body["original_body"]["token"],
+        {"embeds": [embed]},
+    )
+
+    if success:
+        print(f"Successfully sent update: {embed}")
+    else:
+        print(f"ERROR: Could not update discord messages: {response}")
+
+    return None
