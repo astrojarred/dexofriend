@@ -185,7 +185,7 @@ def add_whitelist_entry(body):
 
     guild = db.collection("servers").document(guild_id)
 
-    correct_channel = helper.check_channel(guild, body["original_body"]["channel_id"])
+    correct_channel = helper.check_channel(guild, body["original_body"]["channel_id"], user_permissions)
 
     whitelist_open, started, ended = helper.check_whitelist_open(guild)
     print(f"Is open: {whitelist_open}, Started: {started}, Ended: {ended}")
@@ -406,10 +406,11 @@ def check_whitelist_followup(body):
 
     db = firestore.client()
 
+    user_permissions = body["user_permissions"]
     guild_id = body["guild_id"]
     guild = db.collection("servers").document(guild_id)
 
-    correct_channel = helper.check_channel(guild, body["original_body"]["channel_id"])
+    correct_channel = helper.check_channel(guild, body["original_body"]["channel_id"], user_permissions)
 
     whitelist_info = body["whitelist_info"]
 
@@ -437,7 +438,7 @@ def check_whitelist_followup(body):
     if not correct_channel:
         title = "😱 Whitelist features are not allowed in this channel."
         description = "Please check with the mods if you are confused."
-        
+
     elif not started:
         title = "⏰ Whitelist is not open yet."
         description = "Please check back later."
@@ -946,14 +947,19 @@ def set_channel(body):
 
     new_channel = params["channel"]["value"]
 
+    title = ""
     if current_channel:
         if current_channel == new_channel:
-            title = f"🤔 Whitelist channel is already set to <#{new_channel}>"
-    else:
+            title = f"🤔 Whitelist is already set to this channel."
+            description = f"Channel: <#{new_channel}>"
+            
+    if not title:
         guild.collection("config").document("channel").set({"active": new_channel})
-        title = f"🤝 Set whitelist channel to <#{new_channel}>!"
+        title = f"🤝 Successfully set the whitelist channel!"
+        description = f"Channel: <#{new_channel}>"
 
-    embed = {"type": "rich", "footer": {"text": "With 💖, DexoBot"}, "title": title}
+
+    embed = {"type": "rich", "footer": {"text": "With 💖, DexoBot"}, "title": title, "description": description}
 
     success, response = helper.update_discord_message(
         body["original_body"]["application_id"],
