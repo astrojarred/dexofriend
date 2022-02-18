@@ -36,10 +36,14 @@ def admin_loader(body):
     lam = client("lambda")
 
     # check for management permissions
+    print("Checking authorization...")
     authorized = helper.permissions.is_manager(permissions)
 
     if not authorized:
+        print("NOT AUTHORIZED")
         return helper.loader("You are not authorized to run this command", loader_emoji="🛑")
+    else:
+        print("USER AUTHORIZED :)")
 
     new_entry = {
         "context": "followup",
@@ -51,6 +55,7 @@ def admin_loader(body):
         "original_body": body,
     }
 
+    pinrt("invoking lambda...")
     lam.invoke(
         FunctionName=body["invoked-function-arn"],
         InvocationType="Event",
