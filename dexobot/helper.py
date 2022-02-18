@@ -393,14 +393,14 @@ class permissions():
     @staticmethod
     def has(user_permissions, permission_to_check):
         
-        return (user_permissions & permission_to_check) == permission_to_check
+        return (int(user_permissions) & permission_to_check) == permission_to_check
     
     @staticmethod
     def is_admin(user_permissions, permission_to_check = ADMINISTRATOR):
         
-        return (user_permissions & permission_to_check) == permission_to_check
+        return (int(user_permissions) & permission_to_check) == permission_to_check
 
     @staticmethod
     def is_manager(user_permissions, permission_to_check = MANAGE_ROLES):
         
-        return (user_permissions & permission_to_check) == permission_to_check
+        return (int(user_permissions) & permission_to_check) == permission_to_check
