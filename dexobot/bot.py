@@ -1515,7 +1515,7 @@ def set_api_key(body):
     guild = db.collection("servers").document(guild_id)
 
     params = helper.parse_options(body["data"]["options"])
-    api_key = params.get["password"]["value"]
+    api_key = params["password"]["value"]
 
     # set api password
     guild.collection("config").document("api").update({"key": api_key})
