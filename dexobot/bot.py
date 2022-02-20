@@ -1106,7 +1106,11 @@ def clear_whitelist(body):
                 {"embeds": [embed], "components": []},
             )
 
+            # remove all WL entries
             helper.clear_whitelist(guild)
+
+            # clear counter
+            guild.collection("config").document("stats").update({"n_users": 0})
 
             embed["title"] = "💨 Whitelist successfully cleared!"
             embed["description"] = "It was time to let go of the past."
