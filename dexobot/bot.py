@@ -525,7 +525,7 @@ def manually_remove_user(body):
         )
 
         title = f"👋 Bye!"
-        description = f"Successfully <@{user_id}> from whitelist."
+        description = f"Successfully removed <@{user_id}> from whitelist."
     else:
 
         title = f"🤷 User not on whitelist!"
