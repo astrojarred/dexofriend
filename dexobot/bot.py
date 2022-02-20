@@ -695,7 +695,14 @@ def close_whitelist_now(body):
                 "title": "😅 Canceled! No changes made",
             }
 
-        return {"embeds": [embed], "flags": 64}
+        # try updating original message:
+        success, response = helper.update_discord_message(
+            body["message"]["application_id"],
+            body["message"]["token"],
+            {"embeds": [embed], "components": []},
+        )
+
+        return {"embeds": [{"title": "did the thing"}], "flags": 64}
 
     response = {
         "flags": 64,
