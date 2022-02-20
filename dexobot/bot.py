@@ -704,8 +704,8 @@ def close_whitelist_now(body):
         )
 
         if success:
-            print(f"Deleting token for message {body['message']['application_id']}")
-            helper.delete_message_token(guild, body["message"]["application_id"])
+            print(f"Deleting token for message {body['message']['interaction']['id']}")
+            helper.delete_message_token(guild, body["message"]["interaction"]["id"])
             print(f"Successfully sent update: {response}")
         else:
             print(f"ERROR: Could not update discord messages: {response}")
@@ -746,7 +746,7 @@ def close_whitelist_now(body):
     }
 
     helper.save_message_token(
-        guild, body["original_body"]["data"]["id"], body["original_body"]["token"]
+        guild, body["original_body"]["id"], body["original_body"]["token"]
     )
 
     success, response = helper.update_discord_message(
@@ -822,8 +822,8 @@ def open_whitelist_now(body):
         )
 
         if success:
-            print(f"Deleting token for message {body['message']['application_id']}")
-            helper.delete_message_token(guild, body["message"]["application_id"])
+            print(f"Deleting token for message {body['message']['interaction']['id']}")
+            helper.delete_message_token(guild, body["message"]["interaction"]["id"])
             print(f"Successfully sent update: {response}")
         else:
             print(f"ERROR: Could not update discord messages: {response}")
@@ -864,7 +864,7 @@ def open_whitelist_now(body):
     }
 
     helper.save_message_token(
-        guild, body["original_body"]["data"]["id"], body["original_body"]["token"]
+        guild, body["original_body"]["id"], body["original_body"]["token"]
     )
 
     success, response = helper.update_discord_message(
