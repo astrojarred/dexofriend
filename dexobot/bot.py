@@ -185,7 +185,9 @@ def add_whitelist_entry(body):
 
     guild = db.collection("servers").document(guild_id)
 
-    correct_channel = helper.check_channel(guild, body["original_body"]["channel_id"], user_permissions)
+    correct_channel = helper.check_channel(
+        guild, body["original_body"]["channel_id"], user_permissions
+    )
 
     whitelist_open, started, ended = helper.check_whitelist_open(guild)
     print(f"Is open: {whitelist_open}, Started: {started}, Ended: {ended}")
@@ -410,7 +412,9 @@ def check_whitelist_followup(body):
     guild_id = body["guild_id"]
     guild = db.collection("servers").document(guild_id)
 
-    correct_channel = helper.check_channel(guild, body["original_body"]["channel_id"], user_permissions)
+    correct_channel = helper.check_channel(
+        guild, body["original_body"]["channel_id"], user_permissions
+    )
 
     whitelist_info = body["whitelist_info"]
 
@@ -958,8 +962,12 @@ def set_channel(body):
         title = f"🤝 Successfully set the whitelist channel!"
         description = f"Channel: <#{new_channel}>"
 
-
-    embed = {"type": "rich", "footer": {"text": "With 💖, DexoBot"}, "title": title, "description": description}
+    embed = {
+        "type": "rich",
+        "footer": {"text": "With 💖, DexoBot"},
+        "title": title,
+        "description": description,
+    }
 
     success, response = helper.update_discord_message(
         body["original_body"]["application_id"],
@@ -973,6 +981,7 @@ def set_channel(body):
         print(f"ERROR: Could not update discord messages: {response}")
 
     return None
+
 
 def remove_channel(body):
 
@@ -996,13 +1005,11 @@ def remove_channel(body):
     current_info = guild.collection("config").document("channel").get().to_dict()
     current_channel = current_info.get("active")
 
-
     if current_channel:
         guild.collection("config").document("channel").set({"active": None})
         title = f"🤝 Whitelist commands are now active in all channels."
     else:
         title = f"🤔 Whitelist was already open in all channels"
-
 
     embed = {"type": "rich", "footer": {"text": "With 💖, DexoBot"}, "title": title}
 
