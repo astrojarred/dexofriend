@@ -1,5 +1,6 @@
 import json
 import os
+import time
 
 import requests
 import binascii
@@ -79,7 +80,7 @@ def send_discord_followup(bot_token, application_id, interaction_token, payload)
     return res.ok
 
 
-def update_discord_message(application_id, interaction_token, payload, bot_token=None):
+def update_discord_message(application_id, interaction_token, payload, files=None, bot_token=None):
 
     if not bot_token:
         bot_token = os.getenv("DISCORD_BOT_TOKEN")
@@ -94,7 +95,7 @@ def update_discord_message(application_id, interaction_token, payload, bot_token
         "authorization": bot_token,
     }
 
-    res = requests.patch(url, json=payload, headers=header)
+    res = requests.patch(url, json=payload, headers=header, files=files)
 
     if res.ok:
         print(f"Payload sent successfully: {res.json()}")
@@ -102,6 +103,7 @@ def update_discord_message(application_id, interaction_token, payload, bot_token
         print(f"Error sending payload: {res.json()}")
 
     return res.ok, res.json()
+
 
 def create_followup_message(application_id, interaction_token, payload, bot_token=None):
 
@@ -126,6 +128,7 @@ def create_followup_message(application_id, interaction_token, payload, bot_toke
         print(f"Error sending payload: {res.json()}")
 
     return res.ok, res.json()
+
 
 def delete_original_message(application_id, interaction_token, bot_token=None):
 
@@ -236,7 +239,7 @@ def get_stake_address(address):
 
 
 # database stuff
-def check_minter_status(db, collection):
+def check_whitelist_open(guild):
 
     try_number = 1
     max_tries = 10
@@ -244,249 +247,41 @@ def check_minter_status(db, collection):
     while not success and try_number <= max_tries:
         try:
             # do stuff here
-            status = db.collection(collection).document("status").get().to_dict()
+            status = guild.collection("config").document("times").get().to_dict()
             success = True
         except Exception as e:
             print(f"Issue connecting to Firebase: {e}")
             try_number += 1
 
-    return status.get("online"), status.get("last_online")
+    begin_time, end_time = status.get("begin"), status.get("end")
+    now = dt.datetime.now(dt.timezone.utc)
+
+    whitelist_open = True
+    started = True
+    ended = False
+
+    if begin_time:
+        if begin_time > now:
+            whitelist_open = False
+            started = False
+
+    if end_time:
+        if now > end_time:
+            whitelist_open = False
+            ended = True
+
+    return whitelist_open, started, ended
 
 
-def get_time_windows(db, collection):
+def loader(text="Loading...", loading_emoji=None, public=False):
 
-    try_number = 1
-    max_tries = 10
-    success = False
-    while not success and try_number <= max_tries:
-        try:
-            # do stuff here
-            windows = (
-                db.collection(collection).document("windows").get().to_dict()["windows"]
-            )
-            success = True
-        except Exception as e:
-            print(f"Issue connecting to Firebase: {e}")
-            try_number += 1
-
-    return windows
-
-
-def get_current_deadline(deadline_list: list):
-
-    past_dates = []
-    future_dates = []
-
-    for date in deadline_list:
-        if date > dt.datetime.now(dt.timezone.utc):
-            future_dates.append(date)
-        else:
-            past_dates.append(date)
-
-    past_dates = sorted(past_dates)
-    future_dates = sorted(future_dates)
-
-    current_deadline_start = past_dates[-1]
-    current_deadline_end = future_dates[0]
-
-    current_window_id = deadline_list.index(current_deadline_start) + 1
-
-    return current_deadline_start, current_deadline_end, current_window_id
-
-def check_window_changing(db, collection):
-
-    try_number = 1
-    max_tries = 10
-    success = False
-    while not success and try_number <= max_tries:
-        try:
-            # do stuff here
-            status = db.collection(collection).document("window_change").get().to_dict()
-            success = True
-        except Exception as e:
-            print(f"Issue connecting to Firebase: {e}")
-            try_number += 1
-
-    return status.get("is_changing")
-
-def check_drop_over(db, collection):
-
-    try_number = 1
-    max_tries = 10
-    success = False
-    while not success and try_number <= max_tries:
-        try:
-            # do stuff here
-            status = db.collection(collection).document("minting_over").get().to_dict()
-            success = True
-        except Exception as e:
-            print(f"Issue connecting to Firebase: {e}")
-            try_number += 1
-
-    return status.get("minting_over")
-
-
-def date_countdown(deadline):
-    left = deadline - dt.datetime.now(dt.timezone.utc)
-    return f"{left.days}d {left.seconds // 3600}h {(left.seconds // 60) % 60}m"
-
-
-def is_final_jeopardy(db, collection: str):
-
-    try_number = 1
-    max_tries = 10
-    success = False
-    while not success and try_number <= max_tries:
-        try:
-            # do stuff here
-            info = db.collection(collection).document("final_jeopardy").get().to_dict()
-            success = True
-        except Exception as e:
-            print(f"Issue connecting to Firebase: {e}")
-            try_number += 1
-
-    return info.get("active"), info.get("timestamp")
-
-
-# validators
-def has_not_minted_yet(
-    stake_key, db, tx_out_collection, current_deadline_start, whitelist_id, max_txs_allowed = 5
-):
-
-    try_number = 1
-    max_tries = 10
-    success = False
-    while not success and try_number <= max_tries:
-        try:
-            # do stuff here
-            transactions_by_stake = [
-                item.to_dict()
-                for item in db.collection(tx_out_collection)
-                .where("stake_address", "==", stake_key)
-                .where("type", "==", "success")
-                .stream()
-            ]
-            success = True
-        except Exception as e:
-            print(f"Issue connecting to Firebase: {e}")
-            try_number += 1
-
-    try_number = 1
-    max_tries = 10
-    success = False
-    while not success and try_number <= max_tries:
-        try:
-            # do stuff here
-            transactions_by_user = [
-                item.to_dict()
-                for item in db.collection(tx_out_collection)
-                .where("whitelist_id", "==", whitelist_id)
-                .where("type", "==", "success")
-                .stream()
-            ]
-            success = True
-        except Exception as e:
-            print(f"Issue connecting to Firebase: {e}")
-            try_number += 1
-
-    successful_transactions = transactions_by_stake + transactions_by_user
-
-    tx_count = 0
-
-    if not successful_transactions:
-        return True
-
-    for tx_out in successful_transactions:
-        if tx_out["timestamp"] > current_deadline_start:
-            tx_count += 1
-
-    if tx_count >= max_txs_allowed:
-        return False
-
-    return True
-
-
-def has_not_minted_in_final_jeopardy(
-    db, tx_out_collection, whitelist_id, final_jeopardy_timestamp
-):
-
-    try_number = 1
-    max_tries = 10
-    success = False
-    while not success and try_number <= max_tries:
-        try:
-            # do stuff here
-            transactions_by_user = [
-                item.to_dict()
-                for item in db.collection(tx_out_collection)
-                .where("whitelist_id", "==", whitelist_id)
-                .where("type", "==", "success")
-                .stream()
-            ]
-            success = True
-        except Exception as e:
-            print(f"Issue connecting to Firebase: {e}")
-            try_number += 1
-
-    successful_transactions = transactions_by_user
-
-    if not successful_transactions:
-        return True
-
-    for tx_out in successful_transactions:
-        if tx_out["timestamp"] > final_jeopardy_timestamp:
-            return False
-
-    return True
-
-
-def is_eligible_in_current_window(whitelist_info: dict, window_id: int):
-
-    max_window = whitelist_info.get("max_window")
-
-    if max_window:
-        if max_window == window_id:
-            return True
-
-    return False
-
-
-def first_whitelisted_before_window(first_whitelisted, current_deadline_start):
-
-    return first_whitelisted < current_deadline_start
-
-
-def validate_eligibility(db, whitelist_collection, whitelist_info, current_deadline_start, current_window_id, is_final_jeopardy, final_jeopardy_timestamp):
-
-    not_minted_in_final_jeopardy = False
-    selected_in_window = False
-    not_minted_yet = False
-    whitelisted_before_window = False 
-
-    if is_final_jeopardy:
-        not_minted_in_final_jeopardy = has_not_minted_in_final_jeopardy(db, f"{whitelist_collection}_tx_out", whitelist_info["user_id"], final_jeopardy_timestamp)
-        selected_in_window = is_eligible_in_current_window(whitelist_info, current_window_id)
-
-        if not_minted_in_final_jeopardy and selected_in_window:
-            return True, True, True, True
-
-    else:
-        not_minted_yet = has_not_minted_yet(whitelist_info.get("stake_address"), db, f"{whitelist_collection}_tx_out", current_deadline_start, whitelist_info["user_id"])
-        whitelisted_before_window = first_whitelisted_before_window(whitelist_info.get("first_whitelisted"), current_deadline_start)
-
-        if not_minted_yet and whitelisted_before_window:
-            return True, True, True, True
-
-
-    return not_minted_in_final_jeopardy, selected_in_window, not_minted_yet, whitelisted_before_window
-
-def loading_snail(text="Please wait... Submitting your address to whitelist!", public = False):
-
-    loading_snail = "<a:hoppingsnail:905611122659459092>"
+    if not loading_emoji:
+        # loading_emoji = "⏳️"
+        loading_emoji = "<a:pingpongloading:869290575118082078>"
 
     embed = {
         "type": "rich",
-        "title": f"{loading_snail} {text}",
+        "title": f"{loading_emoji} {text}",
     }
 
     if public:
@@ -521,6 +316,7 @@ def resolve_ada_handle(handle):
     except KeyError:
         return None
 
+
 def parse_address(address):
 
     handle = None
@@ -552,3 +348,141 @@ def parse_address(address):
             return None, None, address_type
 
     return address, stake_address, address_type
+
+
+class permissions:
+
+    CREATE_INSTANT_INVITE = 0x0000000000000001
+    KICK_MEMBERS = 0x0000000000000002
+    BAN_MEMBERS = 0x0000000000000004
+    ADMINISTRATOR = 0x0000000000000008
+    MANAGE_CHANNELS = 0x0000000000000010
+    MANAGE_GUILD = 0x0000000000000020
+    ADD_REACTIONS = 0x0000000000000040
+    VIEW_AUDIT_LOG = 0x0000000000000080
+    PRIORITY_SPEAKER = 0x0000000000000100
+    STREAM = 0x0000000000000200
+    VIEW_CHANNEL = 0x0000000000000400
+    SEND_MESSAGES = 0x0000000000000800
+    SEND_TTS_MESSAGES = 0x0000000000001000
+    MANAGE_MESSAGES = 0x0000000000002000
+    EMBED_LINKS = 0x0000000000004000
+    ATTACH_FILES = 0x0000000000008000
+    READ_MESSAGE_HISTORY = 0x0000000000010000
+    MENTION_EVERYONE = 0x0000000000020000
+    USE_EXTERNAL_EMOJIS = 0x0000000000040000
+    VIEW_GUILD_INSIGHTS = 0x0000000000080000
+    CONNECT = 0x0000000000100000
+    SPEAK = 0x0000000000200000
+    MUTE_MEMBERS = 0x0000000000400000
+    DEAFEN_MEMBERS = 0x0000000000800000
+    MOVE_MEMBERS = 0x0000000001000000
+    USE_VAD = 0x0000000002000000
+    CHANGE_NICKNAME = 0x0000000004000000
+    MANAGE_NICKNAMES = 0x0000000008000000
+    MANAGE_ROLES = 0x0000000010000000
+    MANAGE_WEBHOOKS = 0x0000000020000000
+    MANAGE_EMOJIS_AND_STICKERS = 0x0000000040000000
+    USE_APPLICATION_COMMANDS = 0x0000000080000000
+    REQUEST_TO_SPEAK = 0x0000000100000000
+    MANAGE_EVENTS = 0x0000000200000000
+    MANAGE_THREADS = 0x0000000400000000
+    CREATE_PUBLIC_THREADS = 0x0000000800000000
+    CREATE_PRIVATE_THREADS = 0x0000001000000000
+    USE_EXTERNAL_STICKERS = 0x0000002000000000
+    SEND_MESSAGES_IN_THREADS = 0x0000004000000000
+    START_EMBEDDED_ACTIVITIES = 0x0000008000000000
+    MODERATE_MEMBERS = 0x0000010000000000
+
+    @staticmethod
+    def has(user_permissions, permission_to_check):
+
+        return (int(user_permissions) & permission_to_check) == permission_to_check
+
+    @staticmethod
+    def is_admin(user_permissions, permission_to_check=ADMINISTRATOR):
+
+        return (int(user_permissions) & permission_to_check) == permission_to_check
+
+    @staticmethod
+    def is_manager(user_permissions, permission_to_check=MANAGE_ROLES):
+
+        return (int(user_permissions) & permission_to_check) == permission_to_check
+
+
+def check_channel(guild_db, current_channel, user_permissions):
+
+    current_info = guild_db.collection("config").document("channel").get().to_dict()
+    active_channel = current_info.get("active")
+
+    # check if manager
+    manager = permissions.is_manager(user_permissions)
+
+    if manager:
+        # managers can do it from anywhere
+        return True
+    elif not active_channel:
+        return True
+
+    elif current_channel != active_channel:
+        return False
+    else:
+        return True
+
+
+def save_message_token(guild_db, message_id, token):
+
+    guild_db.collection("tokens").document(message_id).set({"token": token})
+
+
+def get_message_token(guild_db, message_id):
+
+    message_info = guild_db.collection("tokens").document(message_id).get().to_dict()
+
+    token = message_info.get("token")
+
+    return token
+
+
+def delete_message_token(guild_db, message_id):
+
+    guild_db.collection("tokens").document(message_id).delete()
+
+
+def clear_whitelist(guild_db, batch_size=50):
+
+    docs = guild_db.collection("whitelist").limit(batch_size).stream()
+
+    n_deleted = 0
+
+    for doc in docs:
+        doc.reference.delete()
+        n_deleted += 1
+
+    print(f"Deleted {n_deleted} docs")
+
+    time.sleep(0.1)
+
+    if n_deleted >= batch_size:
+        clear_whitelist(guild_db, batch_size)
+
+def whitelist_to_dict(guild_db):
+
+    docs = guild_db.collection("whitelist").stream()
+
+    whitelist = {}
+
+    for doc in docs:
+
+        user = doc.to_dict()
+
+        user_id = user["user_id"]
+        user["first_whitelisted_unix_utc"] = int(user["first_whitelisted"].timestamp())
+        user["last_updated_unix_utc"] = int(user["timestamp"].timestamp())
+
+        del user["first_whitelisted"]
+        del user["timestamp"]
+
+        whitelist[user_id] = user
+
+    return whitelist

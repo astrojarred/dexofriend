@@ -54,20 +54,33 @@ class bot_embed:
 class bot_manual:
     """Manually return data fields"""
 
-    def __init__(self, name, action, response_type=4):
+    def __init__(self, name, action, loader=None, response_type=4):
 
         self.name = name
         self.action = action
+        self.loader = loader
         self.response_type = response_type
 
     def run(self, body):
 
-        # run command
-        print(f"Running command: {self.name}")
-        data = self.action(body)
+        # check for loader
 
-        if isinstance(data, bool):
-            return
+        already_responded = False
+        if self.loader:
+            if body.get("context") != "followup":
+                if not body.get("message"):
+                    # don't show loader if followup *or* if it was a button click
+                    print(f"Returning Loader for {self.name}")
+                    data = self.loader(body)
+                    already_responded = True
+
+        if not already_responded:
+            # run command
+            print(f"Running command: {self.name}")
+            data = self.action(body)
+
+            if isinstance(data, bool):
+                return
 
         response = {
             "type": self.response_type,
