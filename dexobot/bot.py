@@ -354,7 +354,7 @@ def manually_add_user(body):
     guild = db.collection("servers").document(guild_id)
 
     # check the cardano address
-    address, stake_info, type_provided = helper.parse_address("addr1q11111")
+    address, stake_info, type_provided = helper.parse_address(provided_address)
 
     embed = {
         "type": "rich",
