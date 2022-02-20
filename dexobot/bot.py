@@ -449,7 +449,7 @@ def manually_add_user(body):
 
     else:
         # if it's a first addition, add the whitelist date seperately
-        info["first_whitelisted"] = info["timestamp"]
+        info["first_whitelisted"] = firestore.SERVER_TIMESTAMP
         guild.collection("whitelist").document(user_id).set(info)
 
         # update the stats dictionary
