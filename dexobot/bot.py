@@ -232,7 +232,7 @@ def add_whitelist_entry(body):
         fields.append(
             {
                 "name": f"{type_provided} provided:",
-                "value": provided_address,
+                "value": f"`{provided_address}`",
                 "inline": False,
             },
         )
@@ -256,7 +256,7 @@ def add_whitelist_entry(body):
         fields.append(
             {
                 "name": "Provided Address",
-                "value": provided_address,
+                "value": f"`{provided_address}`",
                 "inline": False,
             },
         )
@@ -385,7 +385,7 @@ def manually_add_user(body):
         fields.append(
             {
                 "name": f"{type_provided} provided:",
-                "value": provided_address,
+                "value": f"`{provided_address}`",
                 "inline": False,
             },
         )
@@ -409,7 +409,7 @@ def manually_add_user(body):
         fields.append(
             {
                 "name": "Provided Address",
-                "value": provided_address,
+                "value": f"`{provided_address}`",
                 "inline": False,
             },
         )
