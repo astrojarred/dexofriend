@@ -973,3 +973,50 @@ def set_channel(body):
         print(f"ERROR: Could not update discord messages: {response}")
 
     return None
+
+def remove_channel(body):
+
+    # check the whitelist
+    import firebase_admin
+    from firebase_admin import credentials
+    from firebase_admin import firestore
+
+    print("Connecting to firestore.")
+    # Use the application default credentials
+    if not firebase_admin._apps:
+        cert = json.loads(getenv("FIREBASE_CERT"))
+        cred = credentials.Certificate(cert)
+        firebase_app = firebase_admin.initialize_app(cred)
+
+    db = firestore.client()
+
+    guild_id = body["guild_id"]
+    guild = db.collection("servers").document(guild_id)
+
+    params = helper.parse_options(body["data"]["options"])
+
+    current_info = guild.collection("config").document("channel").get().to_dict()
+    current_channel = current_info.get("active")
+
+
+    if current_channel:
+        guild.collection("config").document("channel").set({"active": None})
+        title = f"🤝 Whitelist commands are now active in all channels."
+    else:
+        title = f"🤔 Whitelist was already open in all channels"
+
+
+    embed = {"type": "rich", "footer": {"text": "With 💖, DexoBot"}, "title": title}
+
+    success, response = helper.update_discord_message(
+        body["original_body"]["application_id"],
+        body["original_body"]["token"],
+        {"embeds": [embed]},
+    )
+
+    if success:
+        print(f"Successfully sent update: {embed}")
+    else:
+        print(f"ERROR: Could not update discord messages: {response}")
+
+    return None

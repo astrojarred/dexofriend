@@ -169,5 +169,10 @@
         "required": 1
       }
     ]
+  },
+  {
+    "name": "remove_channel",
+    "type": 1,
+    "description": "Allow whitelisting in all channels."
   }
 ]
