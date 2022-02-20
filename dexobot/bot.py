@@ -1221,12 +1221,18 @@ def export_whitelist(body):
     wl_json = json.dumps(wl_dict)
     wl_bytes = str.encode(wl_json)
 
-    title = "📂 Attached is the current state of your whitelist!"
+    title = "📂 Attached above is the current state of your whitelist!"
     embed = {"type": "rich", "footer": {"text": "With 💖, DexoBot"}, "title": title}
 
     now = dt.datetime.now(dt.timezone.utc).strftime("%Y%m%d%H%M")
     filename = f"./whitelist_{now}_{guild_id}.json"
     files = {"file": (filename, wl_bytes)}
+
+    success, response = helper.update_discord_message(
+        body["original_body"]["application_id"],
+        body["original_body"]["token"],
+        {"embeds": [embed]},
+    )
 
     success, response = helper.update_discord_message(
         body["original_body"]["application_id"],
