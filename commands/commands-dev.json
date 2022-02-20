@@ -191,8 +191,8 @@
     "description": "Manually add a user to the whitelist.",
     "options": [
       {
-        "name": "channel",
-        "description": "Channel where the magic will happen",
+        "name": "user",
+        "description": "User whose WL info you will update",
         "type": 6,
         "required": 1
       },
@@ -210,8 +210,8 @@
     "description": "Manually remove a user from the whitelist.",
     "options": [
       {
-        "name": "channel",
-        "description": "Channel where the magic will happen",
+        "name": "user",
+        "description": "User whose WL info you will delete",
         "type": 6,
         "required": 1
       },

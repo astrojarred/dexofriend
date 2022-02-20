@@ -324,6 +324,87 @@ def add_whitelist_entry(body):
     return None
 
 
+def manually_add_user(body):
+
+    # manually dd addy for user to whitelist
+    import firebase_admin
+    from firebase_admin import credentials
+    from firebase_admin import firestore
+
+    print("Connecting to firestore.")
+    # Use the application default credentials
+    if not firebase_admin._apps:
+        cert = json.loads(getenv("FIREBASE_CERT"))
+        cred = credentials.Certificate(cert)
+        firebase_app = firebase_admin.initialize_app(cred)
+
+    db = firestore.client()
+
+    print("Getting params")
+    # parse the input parameters
+    params = helper.parse_options(body["data"]["options"])
+    print("PARAMS:", params)
+
+    guild_id = body["guild_id"]
+
+    guild = db.collection("servers").document(guild_id)
+
+    user = params["user"]
+
+    timestamp = firestore.SERVER_TIMESTAMP  # dt.datetime.now(dt.timezone.utc)
+
+    # check the cardano address
+    address, stake_info, type_provided = helper.parse_address("addr1q11111")
+    # got_stake, stake_info = helper.get_stake_address(info["address"])
+
+    embed = {
+        "type": "rich",
+        "footer": {"text": "With 💖, DexoBot"},
+    }
+
+    fields = []
+
+
+def manually_remove_user(body):
+
+    # manually dd addy for user to whitelist
+    import firebase_admin
+    from firebase_admin import credentials
+    from firebase_admin import firestore
+
+    print("Connecting to firestore.")
+    # Use the application default credentials
+    if not firebase_admin._apps:
+        cert = json.loads(getenv("FIREBASE_CERT"))
+        cred = credentials.Certificate(cert)
+        firebase_app = firebase_admin.initialize_app(cred)
+
+    db = firestore.client()
+
+    print("Getting params")
+    # parse the input parameters
+    params = helper.parse_options(body["data"]["options"])
+    print("PARAMS:", params)
+
+    guild_id = body["guild_id"]
+
+    guild = db.collection("servers").document(guild_id)
+
+    user = params["user"]
+
+    timestamp = firestore.SERVER_TIMESTAMP  # dt.datetime.now(dt.timezone.utc)
+
+    # check the cardano address
+    address, stake_info, type_provided = helper.parse_address("addr1q11111")
+    # got_stake, stake_info = helper.get_stake_address(info["address"])
+
+    embed = {
+        "type": "rich",
+        "footer": {"text": "With 💖, DexoBot"},
+    }
+
+    fields = []
+
 def check_whitelist(body):
 
     user = body["member"]
