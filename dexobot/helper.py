@@ -103,6 +103,7 @@ def update_discord_message(application_id, interaction_token, payload, bot_token
 
     return res.ok, res.json()
 
+
 def create_followup_message(application_id, interaction_token, payload, bot_token=None):
 
     if not bot_token:
@@ -126,6 +127,7 @@ def create_followup_message(application_id, interaction_token, payload, bot_toke
         print(f"Error sending payload: {res.json()}")
 
     return res.ok, res.json()
+
 
 def delete_original_message(application_id, interaction_token, bot_token=None):
 
@@ -261,7 +263,7 @@ def check_whitelist_open(guild):
         if begin_time > now:
             whitelist_open = False
             started = False
-        
+
     if end_time:
         if now > end_time:
             whitelist_open = False
@@ -270,7 +272,7 @@ def check_whitelist_open(guild):
     return whitelist_open, started, ended
 
 
-def loader(text="Loading...", loading_emoji = None, public = False):
+def loader(text="Loading...", loading_emoji=None, public=False):
 
     if not loading_emoji:
         # loading_emoji = "⏳️"
@@ -313,6 +315,7 @@ def resolve_ada_handle(handle):
     except KeyError:
         return None
 
+
 def parse_address(address):
 
     handle = None
@@ -346,7 +349,7 @@ def parse_address(address):
     return address, stake_address, address_type
 
 
-class permissions():    
+class permissions:
 
     CREATE_INSTANT_INVITE = 0x0000000000000001
     KICK_MEMBERS = 0x0000000000000002
@@ -389,21 +392,22 @@ class permissions():
     SEND_MESSAGES_IN_THREADS = 0x0000004000000000
     START_EMBEDDED_ACTIVITIES = 0x0000008000000000
     MODERATE_MEMBERS = 0x0000010000000000
-    
+
     @staticmethod
     def has(user_permissions, permission_to_check):
-        
-        return (int(user_permissions) & permission_to_check) == permission_to_check
-    
-    @staticmethod
-    def is_admin(user_permissions, permission_to_check = ADMINISTRATOR):
-        
+
         return (int(user_permissions) & permission_to_check) == permission_to_check
 
     @staticmethod
-    def is_manager(user_permissions, permission_to_check = MANAGE_ROLES):
-        
+    def is_admin(user_permissions, permission_to_check=ADMINISTRATOR):
+
         return (int(user_permissions) & permission_to_check) == permission_to_check
+
+    @staticmethod
+    def is_manager(user_permissions, permission_to_check=MANAGE_ROLES):
+
+        return (int(user_permissions) & permission_to_check) == permission_to_check
+
 
 def check_channel(guild_db, current_channel, user_permissions):
 
@@ -423,3 +427,17 @@ def check_channel(guild_db, current_channel, user_permissions):
         return False
     else:
         return True
+
+
+def save_message_token(guild_db, message_id, token):
+
+    guild_db.collection("tokens").document(message_id).set({"token": token})
+
+
+def get_message_token(guild_db, message_id):
+
+    message_info = guild_db.collection("tokens").document(message_id).get().to_dict()
+
+    token = message_info.get("token")
+
+    return token
