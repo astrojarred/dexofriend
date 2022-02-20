@@ -346,16 +346,15 @@ def manually_add_user(body):
     print("PARAMS:", params)
 
     guild_id = body["guild_id"]
+    provided_address = params.get("address")["value"]
+    user_id = params.get("user")["value"]
+    user_info = body["data"]["resolved"]["users"][user_id]
+    user_roles = body["data"]["resolved"]["members"][user_id]["roles"]
 
     guild = db.collection("servers").document(guild_id)
 
-    user = params["user"]
-
-    timestamp = firestore.SERVER_TIMESTAMP  # dt.datetime.now(dt.timezone.utc)
-
     # check the cardano address
     address, stake_info, type_provided = helper.parse_address("addr1q11111")
-    # got_stake, stake_info = helper.get_stake_address(info["address"])
 
     embed = {
         "type": "rich",
@@ -363,6 +362,121 @@ def manually_add_user(body):
     }
 
     fields = []
+
+    info = {
+        "address": provided_address,
+        "user_id": user_id,
+        "discriminator": user_info["discriminator"],
+        "username": user_info["username"],
+        "roles": user_roles,
+        "method": "manual"
+    }
+
+    if stake_info:
+        info["stake_address"] = stake_info
+        info["ok"] = True
+        info["error"] = None
+
+        poolpm = f"https://pool.pm/{stake_info}"
+
+        title = "✨ Successfully submitted to the whitelist!"
+        description = f"[**💢 Check your address on pool.pm 💢**]({poolpm})\n**[{info['stake_address']}]({poolpm})**"
+
+        fields.append(
+            {
+                "name": f"{type_provided} provided:",
+                "value": provided_address,
+                "inline": False,
+            },
+        )
+
+        fields.append(
+            {
+                "name": "User",
+                "value": f"<@&{user_id}>",
+                "inline": False,
+            },
+        )
+
+    else:
+        info["stake_address"] = None
+        info["ok"] = False
+        info["error"] = f"Error calculating stake address: f{stake_info}."
+
+        title = "😢 There was an error processing your address!"
+        description = f"Most likely you have provided an invalid address. Try resubmitting your address or checking if it looks correct on pool.pm.\nFor further support, please copy or screenshot this error message and open a support ticket."
+
+        fields.append(
+            {
+                "name": "Provided Address",
+                "value": provided_address,
+                "inline": False,
+            },
+        )
+
+        fields.append(
+            {
+                "name": "Error",
+                "value": f"Error calculating stake address: `{stake_info}`.",
+                "inline": False,
+            },
+        )
+
+        fields.append(
+            {
+                "name": "User",
+                "value": f"<@&{user_id}>",
+                "inline": False,
+            },
+        )
+
+    embed["title"] = title
+    embed["description"] = description
+    embed["fields"] = fields
+
+    print(f"Adding to the whitelist: {info}")
+
+    # get current info on the whitelist
+    current_info = guild.collection("whitelist").document(user_id).get()
+
+    if current_info.exists:
+        # update the already-existign entry
+        guild.collection("whitelist").document(user_id).update(info)
+
+        guild.collection("config").document("stats").update(
+            {"n_calls": firestore.Increment(1)}
+        )
+
+    else:
+        # if it's a first addition, add the whitelist date seperately
+        info["first_whitelisted"] = info["timestamp"]
+        guild.collection("whitelist").document(user_id).set(info)
+
+        # update the stats dictionary
+
+        if stake_info:
+            # only update user count if address was okay
+            guild.collection("config").document("stats").update(
+                {"n_users": firestore.Increment(1)}
+            )
+
+        guild.collection("config").document("stats").update(
+            {"n_calls": firestore.Increment(1)}
+        )
+
+    print("Sending discord_update")
+    success, response = helper.update_discord_message(
+        body["original_body"]["application_id"],
+        body["original_body"]["token"],
+        {"embeds": [embed]},
+    )
+
+    if success:
+        print("Successfully added!")
+    else:
+        print(f"ERROR: Could not update discord messages: {response}")
+
+    return None
 
 
 def manually_remove_user(body):
@@ -387,23 +501,54 @@ def manually_remove_user(body):
     print("PARAMS:", params)
 
     guild_id = body["guild_id"]
+    user_id = params.get("user")["value"]
 
     guild = db.collection("servers").document(guild_id)
 
-    user = params["user"]
+    # get current info on the whitelist
+    current_info = guild.collection("whitelist").document(user_id).get()
 
-    timestamp = firestore.SERVER_TIMESTAMP  # dt.datetime.now(dt.timezone.utc)
+    if current_info.exists:
 
-    # check the cardano address
-    address, stake_info, type_provided = helper.parse_address("addr1q11111")
-    # got_stake, stake_info = helper.get_stake_address(info["address"])
+        print(f"Remove user {user_id}")
+        # remove the already-existign entry
+        guild.collection("whitelist").document(user_id).delete()
+
+        print("Increment n users by -1")
+
+        guild.collection("config").document("stats").update(
+            {"n_users": firestore.Increment(-1)}
+        )
+
+        guild.collection("config").document("stats").update(
+            {"n_calls": firestore.Increment(1)}
+        )
+
+        title = f"Successfully removed <@&{user_id}> from whitelist."
+    else:
+
+        title = f"Could not find <@&{user_id}> on the whitelist"
+
 
     embed = {
         "type": "rich",
         "footer": {"text": "With 💖, DexoBot"},
+        "title": title
     }
 
-    fields = []
+    print("Sending discord_update")
+    success, response = helper.update_discord_message(
+        body["original_body"]["application_id"],
+        body["original_body"]["token"],
+        {"embeds": [embed]},
+    )
+
+    if success:
+        print("Successfully added!")
+    else:
+        print(f"ERROR: Could not update discord messages: {response}")
+
+    return None
 
 def check_whitelist(body):
 
