@@ -370,6 +370,7 @@ def manually_add_user(body):
         "username": user_info["username"],
         "roles": user_roles,
         "method": "manual",
+        "timestamp": firestore.SERVER_TIMESTAMP,
     }
 
     if stake_info:
