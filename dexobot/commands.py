@@ -16,6 +16,8 @@ ALL_COMMANDS = {
     "remove_channel": bot_manual("remove_channel", bot.remove_channel, bot.admin_loader),
     "clear_whitelist": bot_manual("clear_whitelist", bot.clear_whitelist, bot.admin_loader),
     "export_whitelist": bot_manual("export_whitelist", bot.export_whitelist, bot.admin_loader),
+    "manually_add_user": bot_manual("manually_add_user", bot.manually_add_user, bot.admin_loader),
+    "manually_remove_user": bot_manual("manually_remove_user", bot.manually_remove_user, bot.admin_loader),
 }
 
 def check_command(body):

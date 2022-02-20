@@ -184,5 +184,43 @@
     "name": "export_whitelist",
     "type": 1,
     "description": "Export the whitelist to a JSON file."
+  },
+  {
+    "name": "manually_add_user",
+    "type": 1,
+    "description": "Manually add a user to the whitelist.",
+    "options": [
+      {
+        "name": "channel",
+        "description": "Channel where the magic will happen",
+        "type": 6,
+        "required": 1
+      },
+      {
+        "name": "address",
+        "description": "Cardano wallet address",
+        "type": 3,
+        "required": 1
+      }
+    ]
+  },
+  {
+    "name": "manually_remove_user",
+    "type": 1,
+    "description": "Manually remove a user from the whitelist.",
+    "options": [
+      {
+        "name": "channel",
+        "description": "Channel where the magic will happen",
+        "type": 6,
+        "required": 1
+      },
+      {
+        "name": "address",
+        "description": "Cardano wallet address",
+        "type": 3,
+        "required": 1
+      }
+    ]
   }
 ]
