@@ -179,5 +179,10 @@
     "name": "clear_whitelist",
     "type": 1,
     "description": "[Careful!] Clear the entire whitelist."
+  },
+  {
+    "name": "export_whitelist",
+    "type": 1,
+    "description": "Export the whitelist to a JSON file."
   }
 ]

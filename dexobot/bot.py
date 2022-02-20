@@ -1195,3 +1195,49 @@ def clear_whitelist(body):
         print(f"ERROR: Could not update discord messages: {response}")
 
     return None
+
+
+def export_whitelist(body):
+
+    # check the whitelist
+    import firebase_admin
+    from firebase_admin import credentials
+    from firebase_admin import firestore
+
+    print("Connecting to firestore.")
+    # Use the application default credentials
+    if not firebase_admin._apps:
+        cert = json.loads(getenv("FIREBASE_CERT"))
+        cred = credentials.Certificate(cert)
+        firebase_app = firebase_admin.initialize_app(cred)
+
+    db = firestore.client()
+
+    guild_id = body["guild_id"]
+    guild = db.collection("servers").document(guild_id)
+
+    wl_dict = helper.whitelist_to_dict(guild)
+
+    wl_json = json.dumps(wl_dict)
+    wl_bytes = str.encode(wl_json)
+
+    title = "📂 Attached is the current state of your whitelist!"
+    embed = {"type": "rich", "footer": {"text": "With 💖, DexoBot"}, "title": title}
+
+    now = dt.datetime.now(dt.timezone.utc).strftime("%Y%m%d%H%M")
+    filename = f"./whitelist_{now}_{guild_id}.json"
+    files = {"file": (filename, wl_bytes)}
+
+    success, response = helper.update_discord_message(
+        body["original_body"]["application_id"],
+        body["original_body"]["token"],
+        {"embeds": [embed]},
+        files=files,
+    )
+
+    if success:
+        print(f"Successfully sent update: {embed}")
+    else:
+        print(f"ERROR: Could not update discord messages: {response}")
+
+    return None

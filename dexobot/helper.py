@@ -80,7 +80,7 @@ def send_discord_followup(bot_token, application_id, interaction_token, payload)
     return res.ok
 
 
-def update_discord_message(application_id, interaction_token, payload, bot_token=None):
+def update_discord_message(application_id, interaction_token, payload, files=None, bot_token=None):
 
     if not bot_token:
         bot_token = os.getenv("DISCORD_BOT_TOKEN")
@@ -95,7 +95,7 @@ def update_discord_message(application_id, interaction_token, payload, bot_token
         "authorization": bot_token,
     }
 
-    res = requests.patch(url, json=payload, headers=header)
+    res = requests.patch(url, json=payload, headers=header, files=files)
 
     if res.ok:
         print(f"Payload sent successfully: {res.json()}")
@@ -465,3 +465,24 @@ def clear_whitelist(guild_db, batch_size=50):
 
     if n_deleted >= batch_size:
         clear_whitelist(guild_db, batch_size)
+
+def whitelist_to_dict(guild_db):
+
+    docs = guild_db.collection("whitelist").stream()
+
+    whitelist = {}
+
+    for doc in docs():
+
+        user = doc.to_dict()
+
+        user_id = user["user_id"]
+        user["first_whitelisted_unix_utc"] = int(user["first_whitelisted"].timestamp())
+        user["last_updated_unix_utc"] = int(user["timestamp"].timestamp())
+
+        del user["first_whitelisted"]
+        del user["timestamp"]
+
+        whitelist[user_id] = user
+
+    return whitelist
