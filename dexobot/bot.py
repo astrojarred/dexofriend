@@ -524,16 +524,19 @@ def manually_remove_user(body):
             {"n_calls": firestore.Increment(1)}
         )
 
-        title = f"Successfully removed <@{user_id}> from whitelist."
+        title = f"👋 Bye!"
+        description = f"Successfully <@{user_id}> from whitelist."
     else:
 
-        title = f"Could not find <@{user_id}> on the whitelist"
+        title = f"🤷 User not on whitelist!"
+        description = f"Could not find <@{user_id}> on the whitelist."
 
 
     embed = {
         "type": "rich",
         "footer": {"text": "With 💖, DexoBot"},
-        "title": title
+        "title": title,
+        "description": description
     }
 
     print("Sending discord_update")
