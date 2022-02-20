@@ -1063,3 +1063,124 @@ def remove_channel(body):
         print(f"ERROR: Could not update discord messages: {response}")
 
     return None
+
+
+def clear_whitelist(body):
+
+    # check the whitelist
+    import firebase_admin
+    from firebase_admin import credentials
+    from firebase_admin import firestore
+
+    print("Connecting to firestore.")
+    # Use the application default credentials
+    if not firebase_admin._apps:
+        cert = json.loads(getenv("FIREBASE_CERT"))
+        cred = credentials.Certificate(cert)
+        firebase_app = firebase_admin.initialize_app(cred)
+
+    db = firestore.client()
+
+    guild_id = body["guild_id"]
+    guild = db.collection("servers").document(guild_id)
+
+    if body.get("message"):
+        # user clicked a button
+
+        selection = body.get("data").get("custom_id")
+        token = helper.get_message_token(guild, body["message"]["interaction"]["id"])
+
+        if selection == "confirm":
+
+            embed = {
+                "type": "rich",
+                "footer": {"text": "With 💖, DexoBot"},
+                "title": "<a:pingpongloading:869290575118082078> Clearing whitelist.",
+                "description": "This may take a few minutes. Please be patient and don't run the command again."
+            }
+
+            # try updating original message:
+            success, response = helper.update_discord_message(
+                body["message"]["application_id"],
+                token,
+                {"embeds": [embed], "components": []},
+            )
+
+            helper.clear_whitelist(guild)
+
+            embed["title"] = "💨 Whitelist successfully cleared!"
+            embed["description"] = "It was time to let go of the past."
+
+        else:
+            embed = {
+                "type": "rich",
+                "footer": {"text": "With 💖, DexoBot"},
+                "title": "😅 Canceled!",
+                "description": "As if nothing even happened."
+            }
+
+        # try updating original message:
+        success, response = helper.update_discord_message(
+            body["message"]["application_id"],
+            token,
+            {"embeds": [embed], "components": []},
+        )
+
+        if success:
+            print(f"Deleting token for message {body['message']['interaction']['id']}")
+            helper.delete_message_token(guild, body["message"]["interaction"]["id"])
+            print(f"Successfully sent update: {response}")
+        else:
+            print(f"ERROR: Could not update discord messages: {response}")
+
+        return None
+
+    response = {
+        "flags": 64,
+        "embeds": [
+            {
+                "type": "rich",
+                "title": "Are you absolutely sure you want to erase the entire whitelist?",
+                "description": "This will clear the entire whitelist *right now* and you can never go back.",
+                "footer": {"text": "With 💖, DexoBot"},
+            }
+        ],
+        "components": [
+            {
+                "type": 1,
+                "components": [
+                    {
+                        "type": 2,
+                        "label": "Cancel",
+                        "style": 1,
+                        "custom_id": "cancel",
+                        "emoji": {"id": None, "name": "🏃"},
+                    },
+                    {
+                        "type": 2,
+                        "label": "Confirm",
+                        "style": 4,
+                        "custom_id": "confirm",
+                        "emoji": {"id": None, "name": "🙌"},
+                    },
+                ],
+            }
+        ],
+    }
+
+    helper.save_message_token(
+        guild, body["original_body"]["id"], body["original_body"]["token"]
+    )
+
+    success, response = helper.update_discord_message(
+        body["original_body"]["application_id"],
+        body["original_body"]["token"],
+        response,
+    )
+
+    if success:
+        print(f"Successfully sent update: {response}")
+    else:
+        print(f"ERROR: Could not update discord messages: {response}")
+
+    return None

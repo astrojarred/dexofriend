@@ -1,5 +1,6 @@
 import json
 import os
+import time
 
 import requests
 import binascii
@@ -442,6 +443,25 @@ def get_message_token(guild_db, message_id):
 
     return token
 
+
 def delete_message_token(guild_db, message_id):
 
     guild_db.collection("tokens").document(message_id).delete()
+
+
+def clear_whitelist(guild_db, batch_size=50):
+
+    docs = guild_db.collection("whitelist").limit(batch_size).stream()
+
+    n_deleted = 0
+
+    for doc in docs:
+        doc.reference.delete()
+        n_deleted += 1
+
+    print(f"Deleted {n_deleted} docs")
+
+    time.sleep(0.1)
+
+    if n_deleted >= batch_size:
+        clear_whitelist(guild_db, batch_size)

@@ -174,5 +174,10 @@
     "name": "remove_channel",
     "type": 1,
     "description": "Allow whitelisting in all channels."
+  },
+  {
+    "name": "clear_whitelist",
+    "type": 1,
+    "description": "[Careful!] Clear the entire whitelist."
   }
 ]

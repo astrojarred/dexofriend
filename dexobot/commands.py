@@ -13,7 +13,8 @@ ALL_COMMANDS = {
     "open_whitelist_now": bot_manual("open_whitelist_now", bot.open_whitelist_now, bot.admin_loader),
     "info": bot_manual("info", bot.get_whitelist_info, bot.admin_loader),
     "set_channel": bot_manual("set_channel", bot.set_channel, bot.admin_loader),
-    "remove_channel": bot_manual("remove_channel", bot.remove_channel, bot.admin_loader)
+    "remove_channel": bot_manual("remove_channel", bot.remove_channel, bot.admin_loader),
+    "clear_whitelist": bot_manual("clear_whitelist", bot.clear_whitelist, bot.admin_loader),
 }
 
 def check_command(body):
