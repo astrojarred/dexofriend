@@ -698,7 +698,7 @@ def close_whitelist_now(body):
         # try updating original message:
         success, response = helper.update_discord_message(
             body["message"]["application_id"],
-            body["message"]["token"],
+            body["token"],
             {"embeds": [embed], "components": []},
         )
 
