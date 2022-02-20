@@ -189,6 +189,8 @@ def add_whitelist_entry(body):
         guild, body["original_body"]["channel_id"], user_permissions
     )
 
+    is_manager = helper.permissions.is_manager(user_permissions)
+
     whitelist_open, started, ended = helper.check_whitelist_open(guild)
     print(f"Is open: {whitelist_open}, Started: {started}, Ended: {ended}")
 
@@ -207,11 +209,11 @@ def add_whitelist_entry(body):
 
     fields = []
 
-    if not correct_channel:
+    if not correct_channel and not is_manager:
         title = "😱 Whitelist features are not allowed in this channel."
         description = "Please check with the mods if you are unsure."
 
-    elif not whitelist_open:
+    elif not whitelist_open and not is_manager:
         if not started:
             title = "⏰ This whitelist is not open yet."
             description = "Please check back later."
