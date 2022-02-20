@@ -393,7 +393,7 @@ def manually_add_user(body):
         fields.append(
             {
                 "name": "User",
-                "value": f"<@&{user_id}>",
+                "value": f"<@{user_id}>",
                 "inline": False,
             },
         )
@@ -425,7 +425,7 @@ def manually_add_user(body):
         fields.append(
             {
                 "name": "User",
-                "value": f"<@&{user_id}>",
+                "value": f"<@{user_id}>",
                 "inline": False,
             },
         )
@@ -524,10 +524,10 @@ def manually_remove_user(body):
             {"n_calls": firestore.Increment(1)}
         )
 
-        title = f"Successfully removed <@&{user_id}> from whitelist."
+        title = f"Successfully removed <@{user_id}> from whitelist."
     else:
 
-        title = f"Could not find <@&{user_id}> on the whitelist"
+        title = f"Could not find <@{user_id}> on the whitelist"
 
 
     embed = {
