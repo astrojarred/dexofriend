@@ -1218,11 +1218,28 @@ def export_whitelist(body):
 
     wl_dict = helper.whitelist_to_dict(guild)
 
+    embed = {"type": "rich", "footer": {"text": "With 💖, DexoBot"}, "title": ""}
+
+    if not wl_dict:
+        embed["title"] = "🤔 The whitelist is currently empty!"
+        embed["description"] = "Please add users to the whitelist and try again."
+        success, response = helper.update_discord_message(
+            body["original_body"]["application_id"],
+            body["original_body"]["token"],
+            {"embeds": [embed]},
+        )
+
+        if success:
+            print(f"Successfully sent update: {embed}")
+        else:
+            print(f"ERROR: Could not update discord messages: {response}")
+
+        return None
+
     wl_json = json.dumps(wl_dict)
     wl_bytes = str.encode(wl_json)
 
-    title = "📂 Attached above is the current state of your whitelist!"
-    embed = {"type": "rich", "footer": {"text": "With 💖, DexoBot"}, "title": title}
+    embed["title"] = "📂 Attached above is the current state of your whitelist!"
 
     now = dt.datetime.now(dt.timezone.utc).strftime("%Y%m%d%H%M")
     filename = f"./whitelist_{now}_{guild_id}.json"
