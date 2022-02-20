@@ -668,7 +668,7 @@ def close_whitelist_now(body):
         # user clicked a button
 
         selection = body.get("data").get("custom_id")
-        token = helper.get_message_token(guild, body["message"]["application_id"])
+        token = helper.get_message_token(guild, body["message"]["interaction"]["id"])
 
         if selection == "confirm":
 
@@ -745,7 +745,9 @@ def close_whitelist_now(body):
         ],
     }
 
-    helper.save_message_token(guild, body["original_body"]["application_id"], body["original_body"]["token"])
+    helper.save_message_token(
+        guild, body["original_body"]["data"]["id"], body["original_body"]["token"]
+    )
 
     success, response = helper.update_discord_message(
         body["original_body"]["application_id"],
@@ -784,7 +786,7 @@ def open_whitelist_now(body):
         # user clicked a button
 
         selection = body.get("data").get("custom_id")
-        token = helper.get_message_token(guild, body["message"]["application_id"])
+        token = helper.get_message_token(guild, body["message"]["interaction"]["id"])
 
         if selection == "confirm":
 
@@ -861,7 +863,9 @@ def open_whitelist_now(body):
         ],
     }
 
-    helper.save_message_token(guild, body["original_body"]["application_id"], body["original_body"]["token"])
+    helper.save_message_token(
+        guild, body["original_body"]["data"]["id"], body["original_body"]["token"]
+    )
 
     success, response = helper.update_discord_message(
         body["original_body"]["application_id"],
