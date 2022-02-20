@@ -1096,7 +1096,7 @@ def clear_whitelist(body):
                 "type": "rich",
                 "footer": {"text": "With 💖, DexoBot"},
                 "title": "<a:pingpongloading:869290575118082078> Clearing whitelist.",
-                "description": "This may take a few minutes. Please be patient and don't run the command again."
+                "description": "This may take a few minutes. Please be patient and don't run the command again.",
             }
 
             # try updating original message:
@@ -1106,9 +1106,16 @@ def clear_whitelist(body):
                 {"embeds": [embed], "components": []},
             )
 
+            print("Closing WL.")
+            guild.collection("config").document("times").update(
+                {"begin": None, "end": firestore.SERVER_TIMESTAMP}
+            )
+
+            print("Clearing WL")
             # remove all WL entries
             helper.clear_whitelist(guild)
 
+            print("Clearing WL counter.")
             # clear counter
             guild.collection("config").document("stats").update({"n_users": 0})
 
@@ -1120,7 +1127,7 @@ def clear_whitelist(body):
                 "type": "rich",
                 "footer": {"text": "With 💖, DexoBot"},
                 "title": "😅 Canceled!",
-                "description": "As if nothing even happened."
+                "description": "As if nothing even happened.",
             }
 
         # try updating original message:
@@ -1144,8 +1151,8 @@ def clear_whitelist(body):
         "embeds": [
             {
                 "type": "rich",
-                "title": "Are you absolutely sure you want to erase the entire whitelist?",
-                "description": "This will clear the entire whitelist *right now* and you can never go back.",
+                "title": "⚠️ Are you absolutely sure you want to erase the entire whitelist?\nPlease read this entire message very carefully!",
+                "description": "1. This will clear the entire whitelist *right now* and you can never go back.\n2. This will close the WL if it is open as a precaution, and erase any programmed start/end times you have set.\n3. If you wish, save a backup of the current state of the whitelist just in case, with the `/export_whitelist` command.",
                 "footer": {"text": "With 💖, DexoBot"},
             }
         ],
