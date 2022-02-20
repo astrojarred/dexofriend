@@ -472,7 +472,7 @@ def whitelist_to_dict(guild_db):
 
     whitelist = {}
 
-    for doc in docs():
+    for doc in docs:
 
         user = doc.to_dict()
 
