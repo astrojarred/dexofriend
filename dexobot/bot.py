@@ -836,7 +836,7 @@ def open_whitelist_now(body):
             {
                 "type": "rich",
                 "title": "Are you absolutely sure?",
-                "description": "This will close the whitelist *right now* and overwrite any start or end times you currently have set.",
+                "description": "This will open the whitelist *right now* and overwrite any start or end times you currently have set.",
                 "footer": {"text": "With 💖, DexoBot"},
             }
         ],
