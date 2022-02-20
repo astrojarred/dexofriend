@@ -993,8 +993,6 @@ def remove_channel(body):
     guild_id = body["guild_id"]
     guild = db.collection("servers").document(guild_id)
 
-    params = helper.parse_options(body["data"]["options"])
-
     current_info = guild.collection("config").document("channel").get().to_dict()
     current_channel = current_info.get("active")
 
