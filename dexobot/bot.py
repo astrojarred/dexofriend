@@ -703,7 +703,14 @@ def close_whitelist_now(body):
             {"embeds": [embed], "components": []},
         )
 
-        return {"embeds": [{"title": "did the thing"}], "flags": 64}
+        if success:
+            print(f"Deleting token for message {body['message']['application_id']}")
+            helper.delete_message_token(guild, body["message"]["application_id"])
+            print(f"Successfully sent update: {response}")
+        else:
+            print(f"ERROR: Could not update discord messages: {response}")
+
+        return None
 
     response = {
         "flags": 64,
@@ -777,6 +784,7 @@ def open_whitelist_now(body):
         # user clicked a button
 
         selection = body.get("data").get("custom_id")
+        token = helper.get_message_token(guild, body["message"]["application_id"])
 
         if selection == "confirm":
 
@@ -804,7 +812,21 @@ def open_whitelist_now(body):
                 "title": "😅 Canceled! No changes made",
             }
 
-        return {"embeds": [embed], "flags": 64}
+        # try updating original message:
+        success, response = helper.update_discord_message(
+            body["message"]["application_id"],
+            token,
+            {"embeds": [embed], "components": []},
+        )
+
+        if success:
+            print(f"Deleting token for message {body['message']['application_id']}")
+            helper.delete_message_token(guild, body["message"]["application_id"])
+            print(f"Successfully sent update: {response}")
+        else:
+            print(f"ERROR: Could not update discord messages: {response}")
+
+        return None
 
     response = {
         "flags": 64,
@@ -838,6 +860,8 @@ def open_whitelist_now(body):
             }
         ],
     }
+
+    helper.save_message_token(guild, body["original_body"]["application_id"], body["original_body"]["token"])
 
     success, response = helper.update_discord_message(
         body["original_body"]["application_id"],

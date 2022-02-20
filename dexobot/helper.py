@@ -441,3 +441,7 @@ def get_message_token(guild_db, message_id):
     token = message_info.get("token")
 
     return token
+
+def delete_message_token(guild_db, message_id):
+
+    guild_db.collection("tokens").document(message_id).delete()
