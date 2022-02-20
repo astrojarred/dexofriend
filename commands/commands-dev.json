@@ -216,5 +216,18 @@
         "required": 1
       }
     ]
+  },
+  {
+    "name": "set_api_key",
+    "type": 1,
+    "description": "Set / Reset server password for access to API.",
+    "options": [
+      {
+        "name": "password",
+        "description": "[shh] Secure API secret password.",
+        "type": 3,
+        "required": 1
+      }
+    ]
   }
 ]

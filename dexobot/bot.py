@@ -369,7 +369,7 @@ def manually_add_user(body):
         "discriminator": user_info["discriminator"],
         "username": user_info["username"],
         "roles": user_roles,
-        "method": "manual"
+        "method": "manual",
     }
 
     if stake_info:
@@ -531,12 +531,11 @@ def manually_remove_user(body):
         title = f"🤷 User not on whitelist!"
         description = f"Could not find <@{user_id}> on the whitelist."
 
-
     embed = {
         "type": "rich",
         "footer": {"text": "With 💖, DexoBot"},
         "title": title,
-        "description": description
+        "description": description,
     }
 
     print("Sending discord_update")
@@ -552,6 +551,7 @@ def manually_remove_user(body):
         print(f"ERROR: Could not update discord messages: {response}")
 
     return None
+
 
 def check_whitelist(body):
 
@@ -1485,6 +1485,51 @@ def export_whitelist(body):
         body["original_body"]["token"],
         {"embeds": [embed]},
         files=files,
+    )
+
+    if success:
+        print(f"Successfully sent update: {embed}")
+    else:
+        print(f"ERROR: Could not update discord messages: {response}")
+
+    return None
+
+
+def set_api_key(body):
+
+    # check the whitelist
+    import firebase_admin
+    from firebase_admin import credentials
+    from firebase_admin import firestore
+
+    print("Connecting to firestore.")
+    # Use the application default credentials
+    if not firebase_admin._apps:
+        cert = json.loads(getenv("FIREBASE_CERT"))
+        cred = credentials.Certificate(cert)
+        firebase_app = firebase_admin.initialize_app(cred)
+
+    db = firestore.client()
+
+    guild_id = body["guild_id"]
+    guild = db.collection("servers").document(guild_id)
+
+    params = helper.parse_options(body["data"]["options"])
+    api_key = params.get["password"]["value"]
+
+    # set api password
+    guild.collection("config").document("api").update({"key": api_key})
+
+    embed = {
+        "type": "rich",
+        "footer": {"text": "With 💖, DexoBot"},
+        "title": "🔐 Successfully set API key!",
+    }
+
+    success, response = helper.update_discord_message(
+        body["original_body"]["application_id"],
+        body["original_body"]["token"],
+        {"embeds": [embed]},
     )
 
     if success:
