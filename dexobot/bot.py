@@ -1243,7 +1243,11 @@ def set_channel(body):
     params = helper.parse_options(body["data"]["options"])
 
     current_info = guild.collection("config").document("channel").get().to_dict()
-    current_channel = current_info.get("active")
+
+    if current_info:
+        current_channel = current_info.get("active")
+    else:
+        current_channel = None
 
     new_channel = params["channel"]["value"]
 
