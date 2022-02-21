@@ -413,7 +413,11 @@ class permissions:
 def check_channel(guild_db, current_channel, user_permissions):
 
     current_info = guild_db.collection("config").document("channel").get().to_dict()
-    active_channel = current_info.get("active")
+
+    if current_info:
+        active_channel = current_info.get("active")
+    else:
+        active_channel = None
 
     # check if manager
     manager = permissions.is_manager(user_permissions)
