@@ -1156,6 +1156,12 @@ def get_whitelist_info(body):
         else:
             ended = None
 
+        
+        if not ended and started is not False:
+            whitelist_open = True
+        else:
+            whitelist_open = False
+
     else:
         start_timestamp, end_timestamp = "None set", "None set"
         whitelist_open = True
