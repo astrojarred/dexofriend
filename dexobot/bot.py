@@ -281,10 +281,10 @@ def add_whitelist_entry(body):
 
         if current_info.exists:
             # update the already-existign entry
-            guild.collection("whitelist").document(str(info["user_id"])).update(info)
+            guild.collection("whitelist").document(str(info["user_id"])).set(info, merge=True)
 
-            guild.collection("config").document("stats").update(
-                {"n_calls": firestore.Increment(1)}
+            guild.collection("config").document("stats").set(
+                {"n_calls": firestore.Increment(1)}, merge=True
             )
 
         else:
@@ -296,16 +296,14 @@ def add_whitelist_entry(body):
 
             if stake_info:
                 # only update user count if address was okay
-                guild.collection("config").document("stats").update(
-                    {"n_users": firestore.Increment(1)}
+                guild.collection("config").document("stats").set(
+                    {"n_users": firestore.Increment(1)}, merge=True
                 )
 
-            guild.collection("config").document("stats").update(
-                {"n_calls": firestore.Increment(1)}
+            guild.collection("config").document("stats").set(
+                {"n_calls": firestore.Increment(1)}, merge=True
             )
-            # guild.collection("config").document("users").update(
-            #     {"ids": firestore.ArrayUnion([info["user_id"]])}
-            # )
+
     else:
         print("Whitelist not open or incorrect channel, not adding anything.")
 
@@ -442,10 +440,10 @@ def manually_add_user(body):
 
     if current_info.exists:
         # update the already-existign entry
-        guild.collection("whitelist").document(user_id).update(info)
+        guild.collection("whitelist").document(user_id).set(info, merge=True)
 
-        guild.collection("config").document("stats").update(
-            {"n_calls": firestore.Increment(1)}
+        guild.collection("config").document("stats").set(
+            {"n_calls": firestore.Increment(1)}, merge=True
         )
 
     else:
@@ -457,12 +455,12 @@ def manually_add_user(body):
 
         if stake_info:
             # only update user count if address was okay
-            guild.collection("config").document("stats").update(
-                {"n_users": firestore.Increment(1)}
+            guild.collection("config").document("stats").set(
+                {"n_users": firestore.Increment(1)}, merge=True
             )
 
-        guild.collection("config").document("stats").update(
-            {"n_calls": firestore.Increment(1)}
+        guild.collection("config").document("stats").set(
+            {"n_calls": firestore.Increment(1)}, merge=True
         )
 
     print("Sending discord_update")
@@ -517,12 +515,12 @@ def manually_remove_user(body):
 
         print("Increment n users by -1")
 
-        guild.collection("config").document("stats").update(
-            {"n_users": firestore.Increment(-1)}
+        guild.collection("config").document("stats").set(
+            {"n_users": firestore.Increment(-1)}, merge=True
         )
 
-        guild.collection("config").document("stats").update(
-            {"n_calls": firestore.Increment(1)}
+        guild.collection("config").document("stats").set(
+            {"n_calls": firestore.Increment(1)}, merge=True
         )
 
         title = f"👋 Bye!"
@@ -771,7 +769,7 @@ def set_start_time(body):
 
     print(f"Got begin time: {begin_time}")
 
-    guild.collection("config").document("times").update({"begin": begin_time})
+    guild.collection("config").document("times").set({"begin": begin_time}, merge=True)
 
     print("Updated begin time!")
 
@@ -840,7 +838,7 @@ def set_end_time(body):
 
     print(f"Got end time: {end_time}")
 
-    guild.collection("config").document("times").update({"end": end_time})
+    guild.collection("config").document("times").set({"end": end_time}, merge=True)
 
     print("Updated end time!")
 
@@ -902,8 +900,8 @@ def close_whitelist_now(body):
 
         if selection == "confirm":
 
-            guild.collection("config").document("times").update(
-                {"begin": None, "end": firestore.SERVER_TIMESTAMP}
+            guild.collection("config").document("times").set(
+                {"begin": None, "end": firestore.SERVER_TIMESTAMP}, merge=True
             )
 
             embed = {
@@ -1020,8 +1018,8 @@ def open_whitelist_now(body):
 
         if selection == "confirm":
 
-            guild.collection("config").document("times").update(
-                {"begin": firestore.SERVER_TIMESTAMP, "end": None}
+            guild.collection("config").document("times").set(
+                {"begin": firestore.SERVER_TIMESTAMP, "end": None}, merge=True
             )
 
             embed = {
@@ -1359,8 +1357,8 @@ def clear_whitelist(body):
             )
 
             print("Closing WL.")
-            guild.collection("config").document("times").update(
-                {"begin": None, "end": firestore.SERVER_TIMESTAMP}
+            guild.collection("config").document("times").set(
+                {"begin": None, "end": firestore.SERVER_TIMESTAMP}, merge=True
             )
 
             print("Clearing WL")
@@ -1369,7 +1367,7 @@ def clear_whitelist(body):
 
             print("Clearing WL counter.")
             # clear counter
-            guild.collection("config").document("stats").update({"n_users": 0})
+            guild.collection("config").document("stats").set({"n_users": 0}, merge=True)
 
             embed["title"] = "💨 Whitelist successfully cleared!"
             embed["description"] = "It was time to let go of the past."
@@ -1541,7 +1539,7 @@ def set_api_key(body):
     api_key = params["password"]["value"]
 
     # set api password
-    guild.collection("config").document("api").update({"key": api_key})
+    guild.collection("config").document("api").set({"key": api_key}, merge=True)
 
     embed = {
         "type": "rich",
