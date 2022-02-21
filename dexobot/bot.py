@@ -1146,8 +1146,8 @@ def get_whitelist_info(body):
         )
 
         now = dt.datetime.now(dt.timezone.utc)
-        started = None if not times.get("begin") else start_timestamp < now
-        ended = None if not times.get("begin") else start_timestamp < now
+        started = None if not times.get("begin") else times.get('begin') < now
+        ended = None if not times.get("begin") else times.get('end') < now
 
         if not ended and started is not False:
             whitelist_open = True
