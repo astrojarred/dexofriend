@@ -1134,22 +1134,44 @@ def get_whitelist_info(body):
     times = guild.collection("config").document("times").get().to_dict()
     channel = guild.collection("config").document("channel").get().to_dict()
 
-    start_timestamp = (
-        f"<t:{int(times.get('begin').timestamp())}:F>"
-        if times.get("begin")
-        else "None set"
-    )
-    end_timestamp = (
-        f"<t:{int(times.get('end').timestamp())}:F>" if times.get("end") else "None set"
-    )
-    active_channel = (
-        f"<#{channel.get('active')}>" if channel.get("active") else "None set"
-    )
+    if not stats:
+        stats = {"n_users": 0}
+
+    if times:
+        start_timestamp = (
+            f"<t:{int(times.get('begin').timestamp())}:F>"
+            if times.get("begin")
+            else "None set"
+        )
+        end_timestamp = (
+            f"<t:{int(times.get('end').timestamp())}:F>" if times.get("end") else "None set"
+        )
+
+        now = dt.datetime.now(dt.timezone.utc)
+        started = None if not times.get("begin") else start_timestamp < now
+        ended = None if not times.get("begin") else start_timestamp < now
+
+        if not ended and started is not False:
+            whitelist_open = True
+        else:
+            whitelist_open = False
+
+    else:
+        start_timestamp, end_timestamp = "None set", "None set"
+        whitelist_open = True
+
+    if channel:
+        active_channel = (
+            f"<#{channel.get('active')}>" if channel.get("active") else "None set"
+        )
+    else:
+        active_channel = "None set"
 
     embed = {
         "type": "rich",
         "footer": {"text": "With 💖, DexoBot"},
-        "title": "🤓 Whitelist information for your server:",
+        "title": f"🤓 Whitelist is currently **{'open' if whitelist_open else 'closed'}**",
+        "description": "Whitelist info for your server:",
         "fields": [
             {
                 "name": "Total users",
