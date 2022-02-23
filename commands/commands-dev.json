@@ -218,6 +218,19 @@
     ]
   },
   {
+    "name": "manually_check_user",
+    "type": 1,
+    "description": "Manually check user's whitelist status.",
+    "options": [
+      {
+        "name": "user",
+        "description": "User whose WL info you will check",
+        "type": 6,
+        "required": 1
+      }
+    ]
+  },
+  {
     "name": "set_api_key",
     "type": 1,
     "description": "Set / Reset server password for access to API.",

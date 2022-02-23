@@ -753,6 +753,129 @@ def check_whitelist_followup(body):
     return None
 
 
+def manually_check_user(body):
+
+    # manually dd addy for user to whitelist
+    import firebase_admin
+    from firebase_admin import credentials
+    from firebase_admin import firestore
+
+    print("Connecting to firestore.")
+    # Use the application default credentials
+    if not firebase_admin._apps:
+        cert = json.loads(getenv("FIREBASE_CERT"))
+        cred = credentials.Certificate(cert)
+        firebase_app = firebase_admin.initialize_app(cred)
+
+    db = firestore.client()
+
+    print("Getting params")
+    # parse the input parameters
+    params = helper.parse_options(body["data"]["options"])
+    print("PARAMS:", params)
+
+    guild_id = body["guild_id"]
+    user_id = params.get("user")["value"]
+
+    guild = db.collection("servers").document(guild_id)
+
+    # get current info on the whitelist
+    current_info = guild.collection("whitelist").document(user_id).get()
+
+    fields = []
+    embed = {
+        "type": "rich",
+        "footer": {"text": "With 💖, DexoBot"},
+        "color": Colors.FAIL
+    }
+
+    if current_info.exists:
+
+        print(f"Found current user info for {user_id}")
+
+        if not current_info["error"]:
+
+            poolpm = f"https://pool.pm/{current_info['stake_address']}"
+            title = "✨ Found whitelisted address!"
+            description = f"[**💢 Check your address on pool.pm 💢**]({poolpm})\n**[{current_info['stake_address']}]({poolpm})**\n\nClick the pool.pm link above and make sure it shows the Cardano wallet you intend to send ADA from to mint."
+            embed["color"] = Colors.SUCCESS
+
+        else:
+
+            title = f"There was an error with this user's address!"
+            description = f"Please see the details below"
+            color = Colors.FAIL
+
+            fields.append(
+                {
+                    "name": "Backend Error Message",
+                    "value": f"`{current_info['error']}`",
+                    "inline": False,
+                },
+            )
+
+
+        fields.append(
+            {
+                "name": "Provided Address",
+                "value": f"`{current_info['address']}`",
+                "inline": False,
+            },
+        )
+
+        fields.append(
+            {
+                "name": "User ID",
+                "value": f"`{current_info['user_id']}`",
+                "inline": False,
+            },
+        )
+
+        fields.append(
+            {
+                "name": "First Whitelisted",
+                "value": f"<t:{int(current_info['first_whitelisted'].timestamp())}:F>",
+                "inline": False,
+            },
+        )
+
+        fields.append(
+            {
+                "name": "Last Updated",
+                "value": f"<t:{int(current_info['timestap'].timestamp())}:F>",
+                "inline": False,
+            },
+        )
+
+    else:
+
+        title = f"🤷 User not on whitelist!"
+        description = f"Could not find <@{user_id}> on the whitelist."
+        color = Colors.FAIL
+
+    embed = {
+        "type": "rich",
+        "footer": {"text": "With 💖, DexoBot"},
+        "title": title,
+        "description": description,
+        "color": color
+    }
+
+    print("Sending discord_update")
+    success, response = helper.update_discord_message(
+        body["original_body"]["application_id"],
+        body["original_body"]["token"],
+        {"embeds": [embed]},
+    )
+
+    if success:
+        print("Successfully checked!")
+    else:
+        print(f"ERROR: Could not update discord messages: {response}")
+
+    return None
+
+
 def set_start_time(body):
 
     # check the whitelist

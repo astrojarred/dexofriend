@@ -18,6 +18,7 @@ ALL_COMMANDS = {
     "export_whitelist": bot_manual("export_whitelist", bot.export_whitelist, bot.admin_loader),
     "manually_add_user": bot_manual("manually_add_user", bot.manually_add_user, bot.admin_loader),
     "manually_remove_user": bot_manual("manually_remove_user", bot.manually_remove_user, bot.admin_loader),
+    "manually_check_user": bot_manual("manually_check_user", bot.manually_check_user, bot.admin_loader),
     "set_api_key": bot_manual("set_api_key", bot.set_api_key, bot.admin_loader),
 }
 
