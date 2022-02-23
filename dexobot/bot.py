@@ -792,12 +792,13 @@ def manually_check_user(body):
     if current_info.exists:
 
         print(f"Found current user info for {user_id}")
+        info = current_info.get().to_dict()
 
-        if not current_info["error"]:
+        if not info["error"]:
 
-            poolpm = f"https://pool.pm/{current_info['stake_address']}"
+            poolpm = f"https://pool.pm/{info['stake_address']}"
             title = "✨ Found whitelisted address!"
-            description = f"[**💢 Check your address on pool.pm 💢**]({poolpm})\n**[{current_info['stake_address']}]({poolpm})**\n\nClick the pool.pm link above and make sure it shows the Cardano wallet you intend to send ADA from to mint."
+            description = f"[**💢 Check your address on pool.pm 💢**]({poolpm})\n**[{info['stake_address']}]({poolpm})**\n\nClick the pool.pm link above and make sure it shows the Cardano wallet you intend to send ADA from to mint."
             embed["color"] = Colors.SUCCESS
 
         else:
@@ -809,7 +810,7 @@ def manually_check_user(body):
             fields.append(
                 {
                     "name": "Backend Error Message",
-                    "value": f"`{current_info['error']}`",
+                    "value": f"`{info['error']}`",
                     "inline": False,
                 },
             )
@@ -818,7 +819,7 @@ def manually_check_user(body):
         fields.append(
             {
                 "name": "Provided Address",
-                "value": f"`{current_info['address']}`",
+                "value": f"`{info['address']}`",
                 "inline": False,
             },
         )
@@ -826,7 +827,7 @@ def manually_check_user(body):
         fields.append(
             {
                 "name": "User ID",
-                "value": f"`{current_info['user_id']}`",
+                "value": f"`{info['user_id']}`",
                 "inline": False,
             },
         )
@@ -834,7 +835,7 @@ def manually_check_user(body):
         fields.append(
             {
                 "name": "First Whitelisted",
-                "value": f"<t:{int(current_info['first_whitelisted'].timestamp())}:F>",
+                "value": f"<t:{int(info['first_whitelisted'].timestamp())}:F>",
                 "inline": False,
             },
         )
@@ -842,7 +843,7 @@ def manually_check_user(body):
         fields.append(
             {
                 "name": "Last Updated",
-                "value": f"<t:{int(current_info['timestap'].timestamp())}:F>",
+                "value": f"<t:{int(info['timestap'].timestamp())}:F>",
                 "inline": False,
             },
         )
