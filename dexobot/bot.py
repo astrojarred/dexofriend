@@ -811,19 +811,19 @@ def manually_check_user(body):
                 },
             )
 
+        fields.append(
+            {
+                "name": "User",
+                "value": f"`<@{info['user_id']}>`",
+                "inline": False,
+            },
+        )
+
 
         fields.append(
             {
                 "name": "Provided Address",
                 "value": f"`{info['address']}`",
-                "inline": False,
-            },
-        )
-
-        fields.append(
-            {
-                "name": "User ID",
-                "value": f"`{info['user_id']}`",
                 "inline": False,
             },
         )
