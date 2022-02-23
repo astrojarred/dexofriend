@@ -792,7 +792,7 @@ def manually_check_user(body):
     if current_info.exists:
 
         print(f"Found current user info for {user_id}")
-        info = current_info.get().to_dict()
+        info = current_info.to_dict()
 
         if not info["error"]:
 
