@@ -783,11 +783,7 @@ def manually_check_user(body):
     current_info = guild.collection("whitelist").document(user_id).get()
 
     fields = []
-    embed = {
-        "type": "rich",
-        "footer": {"text": "With 💖, DexoBot"},
-        "color": Colors.FAIL
-    }
+    color = Colors.FAIL
 
     if current_info.exists:
 
@@ -799,7 +795,7 @@ def manually_check_user(body):
             poolpm = f"https://pool.pm/{info['stake_address']}"
             title = "✨ Found whitelisted address!"
             description = f"[**💢 Check your address on pool.pm 💢**]({poolpm})\n**[{info['stake_address']}]({poolpm})**\n\nClick the pool.pm link above and make sure it shows the Cardano wallet you intend to send ADA from to mint."
-            embed["color"] = Colors.SUCCESS
+            color = Colors.SUCCESS
 
         else:
 
@@ -859,7 +855,8 @@ def manually_check_user(body):
         "footer": {"text": "With 💖, DexoBot"},
         "title": title,
         "description": description,
-        "color": color
+        "color": color,
+        "fields": fields
     }
 
     print("Sending discord_update")
