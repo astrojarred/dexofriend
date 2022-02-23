@@ -15,8 +15,8 @@ class Colors:
 
     SUCCESS = 0x09A67B
     FAIL = 0xc8414c
-    PINK = 0xFF5ACD
-    BLUE = 0x60d4fb
+    INFO = 0xFF5ACD
+    STATUSQUO = 0x60d4fb
 
 
 def constant(body):
@@ -36,7 +36,7 @@ def constant(body):
         "type": "rich",
         "title": phrase,
         "footer": {"text": "With 💖, DexoBot"},
-        "color": Colors.BLUE
+        "color": Colors.STATUSQUO
     }
 
     return {"embeds": [embed], "flags": 64}
@@ -798,7 +798,7 @@ def set_start_time(body):
         "type": "rich",
         "footer": {"text": "With 💖, DexoBot"},
         "title": "⏰ Whitlist starting time set!",
-        "color": Colors.PINK,
+        "color": Colors.INFO,
         "fields": [
             {
                 "name": "When?",
@@ -868,7 +868,7 @@ def set_end_time(body):
         "type": "rich",
         "footer": {"text": "With 💖, DexoBot"},
         "title": "🏁 Whitlist closing time set!",
-        "color": Colors.PINK,
+        "color": Colors.INFO,
         "fields": [
             {
                 "name": "When?",
@@ -931,7 +931,7 @@ def close_whitelist_now(body):
                 "type": "rich",
                 "footer": {"text": "With 💖, DexoBot"},
                 "title": "📪️ Whitlist is now Closed!",
-                "color": Colors.PINK,
+                "color": Colors.INFO,
                 "fields": [
                     {
                         "name": "Since?",
@@ -946,7 +946,7 @@ def close_whitelist_now(body):
                 "type": "rich",
                 "footer": {"text": "With 💖, DexoBot"},
                 "title": "😅 Canceled! No changes made",
-                "color": Colors.BLUE,
+                "color": Colors.STATUSQUO,
             }
 
         # try updating original message:
@@ -973,7 +973,7 @@ def close_whitelist_now(body):
                 "title": "Are you absolutely sure?",
                 "description": "This will close the whitelist *right now* and overwrite any start or end times you currently have set.",
                 "footer": {"text": "With 💖, DexoBot"},
-                "color": Colors.PINK,
+                "color": Colors.INFO,
             }
         ],
         "components": [
@@ -1052,7 +1052,7 @@ def open_whitelist_now(body):
                 "type": "rich",
                 "footer": {"text": "With 💖, DexoBot"},
                 "title": "📬️ Whitlist is now open!",
-                "color": Colors.PINK,
+                "color": Colors.INFO,
                 "fields": [
                     {
                         "name": "Since?",
@@ -1067,7 +1067,7 @@ def open_whitelist_now(body):
                 "type": "rich",
                 "footer": {"text": "With 💖, DexoBot"},
                 "title": "😅 Canceled! No changes made",
-                "color": Colors.BLUE,
+                "color": Colors.STATUSQUO,
             }
 
         # try updating original message:
@@ -1094,7 +1094,7 @@ def open_whitelist_now(body):
                 "title": "Are you absolutely sure?",
                 "description": "This will open the whitelist *right now* and overwrite any start or end times you currently have set.",
                 "footer": {"text": "With 💖, DexoBot"},
-                "color": Colors.PINK,
+                "color": Colors.INFO,
             }
         ],
         "components": [
@@ -1207,7 +1207,7 @@ def get_whitelist_info(body):
         "footer": {"text": "With 💖, DexoBot"},
         "title": f"🤓 Whitelist is currently **{'open' if whitelist_open else 'closed'}**",
         "description": "Whitelist info for your server:",
-        "color": Colors.PINK,
+        "color": Colors.INFO,
         "fields": [
             {
                 "name": "Total users",
@@ -1286,7 +1286,7 @@ def set_channel(body):
         if current_channel == new_channel:
             title = f"🤔 Whitelist is already set to this channel."
             description = f"Channel: <#{new_channel}>"
-            color = Colors.BLUE
+            color = Colors.STATUSQUO
 
     if not title:
         guild.collection("config").document("channel").set({"active": new_channel})
@@ -1341,10 +1341,10 @@ def remove_channel(body):
     if current_channel:
         guild.collection("config").document("channel").set({"active": None})
         title = f"🤝 Whitelist commands are now active in all channels."
-        color = Colors.PINK
+        color = Colors.INFO
     else:
         title = f"🤔 Whitelist was already open in all channels"
-        color = Colors.BLUE
+        color = Colors.STATUSQUO
 
     embed = {"type": "rich", "footer": {"text": "With 💖, DexoBot"}, "title": title, "color": color}
 
@@ -1394,7 +1394,7 @@ def clear_whitelist(body):
                 "footer": {"text": "With 💖, DexoBot"},
                 "title": "<a:pingpongloading:869290575118082078> Clearing whitelist.",
                 "description": "This may take a few minutes. Please be patient and don't run the command again.",
-                "color": Colors.PINK,
+                "color": Colors.INFO,
             }
 
             # try updating original message:
@@ -1426,7 +1426,7 @@ def clear_whitelist(body):
                 "footer": {"text": "With 💖, DexoBot"},
                 "title": "😅 Canceled!",
                 "description": "As if nothing even happened.",
-                "color": Colors.BLUE,
+                "color": Colors.STATUSQUO,
             }
 
         # try updating original message:
@@ -1453,7 +1453,7 @@ def clear_whitelist(body):
                 "title": "⚠️ Are you absolutely sure you want to erase the entire whitelist?\nPlease read this entire message very carefully!",
                 "description": "1. This will clear the entire whitelist *right now* and you can never go back.\n2. This will close the WL if it is open as a precaution, and erase any programmed start/end times you have set.\n3. If you wish, save a backup of the current state of the whitelist just in case, with the `/export_whitelist` command.",
                 "footer": {"text": "With 💖, DexoBot"},
-                "color": Colors.PINK,
+                "color": Colors.INFO,
             }
         ],
         "components": [
@@ -1541,7 +1541,7 @@ def export_whitelist(body):
     wl_bytes = str.encode(wl_json)
 
     embed["title"] = "📂 Attached above is the current state of your whitelist!"
-    embed["color"] = Colors.SUCCESS
+    embed["color"] = Colors.INFO
 
     now = dt.datetime.now(dt.timezone.utc).strftime("%Y%m%d%H%M")
     filename = f"./whitelist_{now}_{guild_id}.json"
