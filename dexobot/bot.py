@@ -843,7 +843,7 @@ def manually_check_user(body):
         fields.append(
             {
                 "name": "Last Updated",
-                "value": f"<t:{int(info['timestap'].timestamp())}:F>",
+                "value": f"<t:{int(info['timestamp'].timestamp())}:F>",
                 "inline": False,
             },
         )
