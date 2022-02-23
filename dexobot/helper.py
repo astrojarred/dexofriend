@@ -282,6 +282,7 @@ def loader(text="Loading...", loading_emoji=None, public=False):
     embed = {
         "type": "rich",
         "title": f"{loading_emoji} {text}",
+        "color": 0xFF5ACD if "not authorized" not in text else 0xc8414c
     }
 
     if public:

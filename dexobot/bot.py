@@ -11,6 +11,13 @@ from blockfrost import BlockFrostApi, ApiError, ApiUrls
 import binascii
 import urllib.parse
 
+class Colors:
+
+    SUCCESS = 0x09A67B
+    FAIL = 0xc8414c
+    PINK = 0xFF5ACD
+    BLUE = 0x60d4fb
+
 
 def constant(body):
 
@@ -29,6 +36,7 @@ def constant(body):
         "type": "rich",
         "title": phrase,
         "footer": {"text": "With 💖, DexoBot"},
+        "color": Colors.BLUE
     }
 
     return {"embeds": [embed], "flags": 64}
@@ -108,7 +116,7 @@ def whitelist(body):
     #    error_message = "Sorry, the whitelist function is for certain roles only. Please see <#900299272996671518> for more information.\nThank you for your enthusiasm, and stay tuned!"
     if address[:4] == "addr" and len(address) < 58:
         error_title = (
-            "<:sadfrog:898565061239521291> There was an error processing your address."
+            "😢 There was an error processing your address."
         )
         error_message = f"Address too short!"
         fields.append(
@@ -125,6 +133,7 @@ def whitelist(body):
             "title": error_title,
             "description": error_message,
             "footer": {"text": "With 💖, DexoBot"},
+            "color": Colors.FAIL
         }
 
         embed["fields"] = fields
@@ -203,6 +212,7 @@ def add_whitelist_entry(body):
     embed = {
         "type": "rich",
         "footer": {"text": "With 💖, DexoBot"},
+        "color": Colors.FAIL
     }
 
     fields = []
@@ -244,6 +254,8 @@ def add_whitelist_entry(body):
                 "inline": False,
             },
         )
+
+        embed["color"] = Colors.SUCCESS
 
     else:
         info["stake_address"] = None
@@ -357,6 +369,7 @@ def manually_add_user(body):
     embed = {
         "type": "rich",
         "footer": {"text": "With 💖, DexoBot"},
+        "color": Colors.FAIL
     }
 
     fields = []
@@ -396,6 +409,8 @@ def manually_add_user(body):
                 "inline": False,
             },
         )
+
+        embed["color"] = Colors.SUCCESS
 
     else:
         info["stake_address"] = None
@@ -525,16 +540,19 @@ def manually_remove_user(body):
 
         title = f"👋 Bye!"
         description = f"Successfully removed <@{user_id}> from whitelist."
+        color = Colors.SUCCESS
     else:
 
         title = f"🤷 User not on whitelist!"
         description = f"Could not find <@{user_id}> on the whitelist."
+        color = Colors.FAIL
 
     embed = {
         "type": "rich",
         "footer": {"text": "With 💖, DexoBot"},
         "title": title,
         "description": description,
+        "color": color
     }
 
     print("Sending discord_update")
@@ -586,6 +604,7 @@ def check_whitelist(body):
             "title": error_title,
             "description": error_message,
             "footer": {"text": "With 💖, DexoBot"},
+            "color": Colors.FAIL
         }
 
         print(f"ERROR: {error_title} -- {error_message}")
@@ -664,6 +683,7 @@ def check_whitelist_followup(body):
         "type": "rich",
         # "author": {"name": "Happy Hoppers Main Drop"},
         "footer": {"text": "With 💖, DexoBot"},
+        "color": Colors.FAIL
     }
 
     # if WL not open yet
@@ -684,6 +704,7 @@ def check_whitelist_followup(body):
                 poolpm = f"https://pool.pm/{info['stake_address']}"
                 title = "✨ Found whitelisted address!"
                 description = f"[**💢 Check your address on pool.pm 💢**]({poolpm})\n**[{info['stake_address']}]({poolpm})**\n\nClick the pool.pm link above and make sure it shows the Cardano wallet you intend to send ADA from to mint."
+                embed["color"] = Colors.SUCCESS
 
             else:
 
@@ -777,6 +798,7 @@ def set_start_time(body):
         "type": "rich",
         "footer": {"text": "With 💖, DexoBot"},
         "title": "⏰ Whitlist starting time set!",
+        "color": Colors.PINK,
         "fields": [
             {
                 "name": "When?",
@@ -846,6 +868,7 @@ def set_end_time(body):
         "type": "rich",
         "footer": {"text": "With 💖, DexoBot"},
         "title": "🏁 Whitlist closing time set!",
+        "color": Colors.PINK,
         "fields": [
             {
                 "name": "When?",
@@ -908,6 +931,7 @@ def close_whitelist_now(body):
                 "type": "rich",
                 "footer": {"text": "With 💖, DexoBot"},
                 "title": "📪️ Whitlist is now Closed!",
+                "color": Colors.PINK,
                 "fields": [
                     {
                         "name": "Since?",
@@ -922,6 +946,7 @@ def close_whitelist_now(body):
                 "type": "rich",
                 "footer": {"text": "With 💖, DexoBot"},
                 "title": "😅 Canceled! No changes made",
+                "color": Colors.BLUE,
             }
 
         # try updating original message:
@@ -948,6 +973,7 @@ def close_whitelist_now(body):
                 "title": "Are you absolutely sure?",
                 "description": "This will close the whitelist *right now* and overwrite any start or end times you currently have set.",
                 "footer": {"text": "With 💖, DexoBot"},
+                "color": Colors.PINK,
             }
         ],
         "components": [
@@ -1026,6 +1052,7 @@ def open_whitelist_now(body):
                 "type": "rich",
                 "footer": {"text": "With 💖, DexoBot"},
                 "title": "📬️ Whitlist is now open!",
+                "color": Colors.PINK,
                 "fields": [
                     {
                         "name": "Since?",
@@ -1040,6 +1067,7 @@ def open_whitelist_now(body):
                 "type": "rich",
                 "footer": {"text": "With 💖, DexoBot"},
                 "title": "😅 Canceled! No changes made",
+                "color": Colors.BLUE,
             }
 
         # try updating original message:
@@ -1066,6 +1094,7 @@ def open_whitelist_now(body):
                 "title": "Are you absolutely sure?",
                 "description": "This will open the whitelist *right now* and overwrite any start or end times you currently have set.",
                 "footer": {"text": "With 💖, DexoBot"},
+                "color": Colors.PINK,
             }
         ],
         "components": [
@@ -1178,6 +1207,7 @@ def get_whitelist_info(body):
         "footer": {"text": "With 💖, DexoBot"},
         "title": f"🤓 Whitelist is currently **{'open' if whitelist_open else 'closed'}**",
         "description": "Whitelist info for your server:",
+        "color": Colors.PINK,
         "fields": [
             {
                 "name": "Total users",
@@ -1256,17 +1286,20 @@ def set_channel(body):
         if current_channel == new_channel:
             title = f"🤔 Whitelist is already set to this channel."
             description = f"Channel: <#{new_channel}>"
+            color = Colors.BLUE
 
     if not title:
         guild.collection("config").document("channel").set({"active": new_channel})
         title = f"🤝 Successfully set the whitelist channel!"
         description = f"Channel: <#{new_channel}>"
+        color = Colors.SUCCESS
 
     embed = {
         "type": "rich",
         "footer": {"text": "With 💖, DexoBot"},
         "title": title,
         "description": description,
+        "color": color
     }
 
     success, response = helper.update_discord_message(
@@ -1308,10 +1341,12 @@ def remove_channel(body):
     if current_channel:
         guild.collection("config").document("channel").set({"active": None})
         title = f"🤝 Whitelist commands are now active in all channels."
+        color = Colors.PINK
     else:
         title = f"🤔 Whitelist was already open in all channels"
+        color = Colors.BLUE
 
-    embed = {"type": "rich", "footer": {"text": "With 💖, DexoBot"}, "title": title}
+    embed = {"type": "rich", "footer": {"text": "With 💖, DexoBot"}, "title": title, "color": color}
 
     success, response = helper.update_discord_message(
         body["original_body"]["application_id"],
@@ -1359,6 +1394,7 @@ def clear_whitelist(body):
                 "footer": {"text": "With 💖, DexoBot"},
                 "title": "<a:pingpongloading:869290575118082078> Clearing whitelist.",
                 "description": "This may take a few minutes. Please be patient and don't run the command again.",
+                "color": Colors.PINK,
             }
 
             # try updating original message:
@@ -1390,6 +1426,7 @@ def clear_whitelist(body):
                 "footer": {"text": "With 💖, DexoBot"},
                 "title": "😅 Canceled!",
                 "description": "As if nothing even happened.",
+                "color": Colors.BLUE,
             }
 
         # try updating original message:
@@ -1416,6 +1453,7 @@ def clear_whitelist(body):
                 "title": "⚠️ Are you absolutely sure you want to erase the entire whitelist?\nPlease read this entire message very carefully!",
                 "description": "1. This will clear the entire whitelist *right now* and you can never go back.\n2. This will close the WL if it is open as a precaution, and erase any programmed start/end times you have set.\n3. If you wish, save a backup of the current state of the whitelist just in case, with the `/export_whitelist` command.",
                 "footer": {"text": "With 💖, DexoBot"},
+                "color": Colors.PINK,
             }
         ],
         "components": [
@@ -1485,6 +1523,7 @@ def export_whitelist(body):
     if not wl_dict:
         embed["title"] = "🤔 The whitelist is currently empty!"
         embed["description"] = "Please add users to the whitelist and try again."
+        embed["color"] = Colors.RED
         success, response = helper.update_discord_message(
             body["original_body"]["application_id"],
             body["original_body"]["token"],
@@ -1502,6 +1541,7 @@ def export_whitelist(body):
     wl_bytes = str.encode(wl_json)
 
     embed["title"] = "📂 Attached above is the current state of your whitelist!"
+    embed["color"] = Colors.SUCCESS
 
     now = dt.datetime.now(dt.timezone.utc).strftime("%Y%m%d%H%M")
     filename = f"./whitelist_{now}_{guild_id}.json"
@@ -1557,6 +1597,7 @@ def set_api_key(body):
         "type": "rich",
         "footer": {"text": "With 💖, DexoBot"},
         "title": "🔐 Successfully set API key!",
+        "color": Colors.SUCCESS
     }
 
     success, response = helper.update_discord_message(
