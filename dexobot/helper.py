@@ -310,7 +310,11 @@ def resolve_ada_handle(handle):
 
     asset = policy + binascii.hexlify(str.encode(handle)).decode("utf-8")
 
-    addresses = api.asset_addresses(asset)
+    try:
+        addresses = api.asset_addresses(asset)
+    except ApiError:
+        print(f"Ada handle {handle} does not exist.")
+        return None
 
     try:
         return addresses[0].address
@@ -340,6 +344,9 @@ def parse_address(address):
     if handle:
         address = resolve_ada_handle(handle)
         print("handle_address", address)
+
+        if not address:  # ada handle does not exist
+            return None, None, address_type
 
     if address_type in ["Mainnet Address", "ADA Handle"]:
         print("getting stake")
