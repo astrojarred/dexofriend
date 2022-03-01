@@ -50,11 +50,12 @@ def lambda_handler(event, context):
             except Exception as e:
                 raise Exception(f"[UNAUTHORIZED] Invalid request signature: {e}")
         else:
-            
+
             if event.get("detail") == "keep-warm":
                 print("Keep warm!")
                 from dexobot.helper import keep_warm
                 keep_warm()
+                print("OK. I am warm!")
                 return {"response": "keeping warm!"}
 
             print("Followup event!")
