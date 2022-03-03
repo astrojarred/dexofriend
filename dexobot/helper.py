@@ -268,6 +268,8 @@ def check_whitelist_open(guild):
         if now > end_time:
             ended = True
 
+    print("CHECKING WL OPENING STATUS:")
+    print(started, ended)
     if (started, ended) in [(True, False), (True, None), (None, False)]:
         whitelist_open = True
 
