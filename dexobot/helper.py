@@ -268,9 +268,8 @@ def check_whitelist_open(guild):
         if now > end_time:
             ended = True
 
-    if not ended and started is not False:
-        if started is not None and ended is not None:
-            whitelist_open = True
+    if (started, ended) in [(True, False), (True, None), (None, False)]:
+        whitelist_open = True
 
     return whitelist_open, started, ended
 
