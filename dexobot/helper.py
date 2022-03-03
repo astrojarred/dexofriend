@@ -260,12 +260,16 @@ def check_whitelist_open(guild):
     started = False
     ended = False
 
+    print("Getting Begin time:")
     if begin_time:
         if begin_time > now:
+            print("WL started")
             started = True
 
+    print("Getting End time:")
     if end_time:
         if now > end_time:
+            print("WL ended")
             ended = True
 
     print("CHECKING WL OPENING STATUS:")
