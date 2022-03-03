@@ -358,6 +358,7 @@ def manually_add_user(body):
     guild_id = body["guild_id"]
     provided_address = params.get("address")["value"]
     user_id = params.get("user")["value"]
+    days_ago = params.get("days_ago")
     user_info = body["data"]["resolved"]["users"][user_id]
     user_roles = body["data"]["resolved"]["members"][user_id]["roles"]
 
@@ -384,6 +385,11 @@ def manually_add_user(body):
         "timestamp": firestore.SERVER_TIMESTAMP,
     }
 
+    first_whitelisted = None
+    if days_ago:
+        now = dt.datetime.now(dt.timezone.utc)
+        first_whitelisted = now - dt.timedelta(days=int(days_ago))
+
     if stake_info:
         info["stake_address"] = stake_info
         info["ok"] = True
@@ -409,6 +415,15 @@ def manually_add_user(body):
                 "inline": False,
             },
         )
+
+        if first_whitelisted:
+            fields.append(
+                {
+                    "name": "Set first whitelisting timestamp to:",
+                    "value": f"<t{int(first_whitelisted.timestamp())}:R>",
+                    "inline": False,
+                },
+            )
 
         embed["color"] = Colors.SUCCESS
 
@@ -455,6 +470,9 @@ def manually_add_user(body):
 
     if current_info.exists:
         # update the already-existign entry
+        if first_whitelisted:
+            info["first_whitelisted"] = first_whitelisted
+
         guild.collection("whitelist").document(user_id).set(info, merge=True)
 
         guild.collection("config").document("stats").set(
@@ -463,7 +481,11 @@ def manually_add_user(body):
 
     else:
         # if it's a first addition, add the whitelist date seperately
-        info["first_whitelisted"] = firestore.SERVER_TIMESTAMP
+        if not first_whitelisted:
+            info["first_whitelisted"] = firestore.SERVER_TIMESTAMP
+        else:
+            info["first_whitelisted"] = first_whitelisted
+
         guild.collection("whitelist").document(user_id).set(info)
 
         # update the stats dictionary

@@ -201,6 +201,13 @@
         "description": "Cardano wallet address",
         "type": 3,
         "required": 1
+      },
+      {
+        "name": "days_ago",
+        "description": "Artificially set number of days since joining WL",
+        "type": 4,
+        "required": 0,
+        "min_value": 1
       }
     ]
   },
