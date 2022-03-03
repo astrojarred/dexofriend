@@ -256,19 +256,21 @@ def check_whitelist_open(guild):
     begin_time, end_time = status.get("begin"), status.get("end")
     now = dt.datetime.now(dt.timezone.utc)
 
-    whitelist_open = True
-    started = True
+    whitelist_open = False
+    started = False
     ended = False
 
     if begin_time:
         if begin_time > now:
-            whitelist_open = False
-            started = False
+            started = True
 
     if end_time:
         if now > end_time:
-            whitelist_open = False
             ended = True
+
+    if not ended and started is not False:
+        if started is not None and ended is not None:
+            whitelist_open = True
 
     return whitelist_open, started, ended
 

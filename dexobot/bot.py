@@ -1285,6 +1285,9 @@ def get_whitelist_info(body):
     if not stats:
         stats = {"n_users": 0}
 
+    whitelist_open, started, ended = helper.check_whitelist_open(guild)
+
+    # get timestamps to show
     if times:
         start_timestamp = (
             f"<t:{int(times.get('begin').timestamp())}:F>"
@@ -1295,26 +1298,8 @@ def get_whitelist_info(body):
             f"<t:{int(times.get('end').timestamp())}:F>" if times.get("end") else "None set"
         )
 
-        now = dt.datetime.now(dt.timezone.utc)
-        if times.get("begin"):
-            started = times.get('begin') < now
-        else:
-            started = None
-
-        if times.get("end"):
-            ended = times.get('end') < now
-        else:
-            ended = None
-
-        
-        if not ended and started is not False:
-            whitelist_open = True
-        else:
-            whitelist_open = False
-
     else:
         start_timestamp, end_timestamp = "None set", "None set"
-        whitelist_open = True
 
     if channel:
         active_channel = (
