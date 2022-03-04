@@ -237,11 +237,11 @@ def add_whitelist_entry(body):
         poolpm = f"https://pool.pm/{stake_info}"
 
         title = "✨ Successfully submitted to the whitelist!"
-        description = f"[**💢 Check your address on pool.pm 💢**]({poolpm})\n**[{info['stake_address']}]({poolpm})**"
+        description = f"[**💢 Check your address on pool.pm 💢**]({poolpm})\n**[<a:arrow_right:949342031166193714>{info['stake_address']}]({poolpm})**"
 
         fields.append(
             {
-                "name": f"{type_provided} provided:",
+                "name": f"📋️ {type_provided} provided:",
                 "value": f"`{provided_address}`",
                 "inline": False,
             },
@@ -249,7 +249,7 @@ def add_whitelist_entry(body):
 
         fields.append(
             {
-                "name": "Note",
+                "name": "👀 Note",
                 "value": "You can check your status at any time with the `/check_whitelist` command.",
                 "inline": False,
             },
@@ -267,7 +267,7 @@ def add_whitelist_entry(body):
 
         fields.append(
             {
-                "name": "Provided Address",
+                "name": "📋️ Provided Address",
                 "value": f"`{provided_address}`",
                 "inline": False,
             },
@@ -275,7 +275,7 @@ def add_whitelist_entry(body):
 
         fields.append(
             {
-                "name": "Error",
+                "name": "❗️ Error",
                 "value": f"Error calculating stake address: `{stake_info}`.",
                 "inline": False,
             },
@@ -398,11 +398,11 @@ def manually_add_user(body):
         poolpm = f"https://pool.pm/{stake_info}"
 
         title = "✨ Successfully submitted to the whitelist!"
-        description = f"[**💢 Check your address on pool.pm 💢**]({poolpm})\n**[{info['stake_address']}]({poolpm})**"
+        description = f"[**💢 Check your address on pool.pm 💢**]({poolpm})\n**[<a:arrow_right:949342031166193714>{info['stake_address']}]({poolpm})**"
 
         fields.append(
             {
-                "name": f"{type_provided} provided:",
+                "name": f"📋️ {type_provided} provided:",
                 "value": f"`{provided_address}`",
                 "inline": False,
             },
@@ -410,7 +410,7 @@ def manually_add_user(body):
 
         fields.append(
             {
-                "name": "User",
+                "name": "👤 User",
                 "value": f"<@{user_id}>",
                 "inline": False,
             },
@@ -419,7 +419,7 @@ def manually_add_user(body):
         if first_whitelisted:
             fields.append(
                 {
-                    "name": "Set first whitelisting timestamp to:",
+                    "name": "⏱️ Set first whitelisting timestamp to:",
                     "value": f"<t:{int(first_whitelisted.timestamp())}:R>",
                     "inline": False,
                 },
@@ -437,7 +437,7 @@ def manually_add_user(body):
 
         fields.append(
             {
-                "name": "Provided Address",
+                "name": "📋️ Provided Address",
                 "value": f"`{provided_address}`",
                 "inline": False,
             },
@@ -445,7 +445,7 @@ def manually_add_user(body):
 
         fields.append(
             {
-                "name": "Error",
+                "name": "❗️ Error",
                 "value": f"Error calculating stake address: `{stake_info}`.",
                 "inline": False,
             },
@@ -453,7 +453,7 @@ def manually_add_user(body):
 
         fields.append(
             {
-                "name": "User",
+                "name": "👤 User",
                 "value": f"<@{user_id}>",
                 "inline": False,
             },
@@ -725,7 +725,7 @@ def check_whitelist_followup(body):
 
                 poolpm = f"https://pool.pm/{info['stake_address']}"
                 title = "✨ Found whitelisted address!"
-                description = f"[**💢 Check your address on pool.pm 💢**]({poolpm})\n**[{info['stake_address']}]({poolpm})**\n\nClick the pool.pm link above and make sure it shows the Cardano wallet you intend to send ADA from to mint."
+                description = f"[**💢 Check your address on pool.pm 💢**]({poolpm})\n**[<a:arrow_right:949342031166193714>{info['stake_address']}]({poolpm})**\n\nClick the pool.pm link above and make sure it shows the Cardano wallet you intend to send ADA from to mint."
                 embed["color"] = Colors.SUCCESS
 
             else:
@@ -816,7 +816,7 @@ def manually_check_user(body):
 
             poolpm = f"https://pool.pm/{info['stake_address']}"
             title = "✨ Found whitelisted address!"
-            description = f"[**💢 Check your address on pool.pm 💢**]({poolpm})\n**[{info['stake_address']}]({poolpm})**\n\nClick the pool.pm link above and make sure it shows the Cardano wallet you intend to send ADA from to mint."
+            description = f"[**💢 Check your address on pool.pm 💢**]({poolpm})\n**[<a:arrow_right:949342031166193714>{info['stake_address']}]({poolpm})**\n\nClick the pool.pm link above and make sure it shows the Cardano wallet you intend to send ADA from to mint."
             color = Colors.SUCCESS
 
         else:
