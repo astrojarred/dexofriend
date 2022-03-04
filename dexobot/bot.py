@@ -420,7 +420,7 @@ def manually_add_user(body):
             fields.append(
                 {
                     "name": "Set first whitelisting timestamp to:",
-                    "value": f"<t{int(first_whitelisted.timestamp())}:R>",
+                    "value": f"<t:{int(first_whitelisted.timestamp())}:R>",
                     "inline": False,
                 },
             )
