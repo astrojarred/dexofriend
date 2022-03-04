@@ -388,7 +388,7 @@ def manually_add_user(body):
     first_whitelisted = None
     if days_ago:
         now = dt.datetime.now(dt.timezone.utc)
-        first_whitelisted = now - dt.timedelta(days=int(days_ago))
+        first_whitelisted = now - dt.timedelta(days=int(days_ago["value"]))
 
     if stake_info:
         info["stake_address"] = stake_info
