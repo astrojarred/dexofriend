@@ -21,6 +21,7 @@ ALL_COMMANDS = {
     "manually_check_user": bot_manual("manually_check_user", bot.manually_check_user, bot.admin_loader),
     "set_api_key": bot_manual("set_api_key", bot.set_api_key, bot.admin_loader),
     "verify": bot_manual("verify_loader", bot.verify_loader),
+    "verify_followup": bot_manual("verify", bot.verify)
 }
 
 def check_command(body):
