@@ -1808,7 +1808,7 @@ def verify(body):
     expiration = dt.datetime.now(tz=dt.timezone.utc) + dt.timedelta(
         hours=1
     )  # expires in 1hr
-    payload = {"user_id": user_id, "exp": expiration, "iss": "DexoBot Friend"}
+    payload = {"user_id": user_id, "exp": expiration, "iss": "DexoBot Friend", "guild": guild_id}
     encoded = jwt.encode(payload, token)
 
     # add token info to firebase
