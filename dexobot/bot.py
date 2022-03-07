@@ -1740,3 +1740,89 @@ def set_api_key(body):
         print(f"ERROR: Could not update discord messages: {response}")
 
     return None
+
+
+def verify_loader(body):
+
+    user = body["member"]
+    permissions = user["permissions"]
+
+    lam = client("lambda")
+
+    # check for management permissions
+
+    new_entry = {
+        "context": "followup",
+        "data": {"name": "verify_followup"},
+        "member": user,
+        "guild_id": body["guild_id"],
+        "user_permissions": permissions,
+        "timestamp": dt.datetime.now(dt.timezone.utc).isoformat(),
+        "original_body": body,
+    }
+
+    print("invoking lambda...")
+    lam.invoke(
+        FunctionName=body["invoked-function-arn"],
+        InvocationType="Event",
+        Payload=json.dumps(new_entry),
+    )
+
+    return helper.loader("Loading... DexoBot Friend is here to help!")
+
+def verify(body):
+
+    # connect to firebase
+    import firebase_admin
+    from firebase_admin import credentials
+    from firebase_admin import firestore
+
+    import jwt
+    import secrets
+
+    print("Connecting to firestore.")
+    # Use the application default credentials
+    if not firebase_admin._apps:
+        cert = json.loads(getenv("FIREBASE_CERT"))
+        cred = credentials.Certificate(cert)
+        firebase_app = firebase_admin.initialize_app(cred)
+
+    db = firestore.client()
+
+    guild_id = body["guild_id"]
+
+    user = body["member"]
+    user_id = user["user"]["id"]
+
+    token = secrets.token_urlsafe(16)
+
+    # create JWT with the token
+    expiration = dt.datetime.now(tz=dt.timezone.utc)+dt.timedelta(hours=1)  # expires in 1hr
+    payload = {"user_id": user_id, "exp": expiration, "iss": "DexoBot Friend"}
+    encoded = jwt.encode(payload, token)
+
+    # add token info to firebase
+
+    db.collection("users").document(user_id).set({"last_jwt": encoded, "last_secret": token, "jwt_exp": expiration, "from_guild": guild_id}, merge=True)
+
+    # return URL with JWT attached
+    embed = {
+        "type": "rich",
+        "footer": {"text": "With 💖, DexoBot"},
+        "title": "🧑‍🚀 Please follow the link below to connect and verify a wallet:",
+        "description": "[<a:arrow_right:949342031166193714> Click me!](http://dexoworlds.com)",
+        "color": Colors.INFO
+    }
+
+    success, response = helper.update_discord_message(
+        body["original_body"]["application_id"],
+        body["original_body"]["token"],
+        {"embeds": [embed]},
+    )
+
+    if success:
+        print(f"Successfully sent update: {embed}")
+    else:
+        print(f"ERROR: Could not update discord messages: {response}")
+
+    return None

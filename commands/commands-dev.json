@@ -249,5 +249,10 @@
         "required": 1
       }
     ]
+  },
+  {
+    "name": "verify",
+    "type": 1,
+    "description": "Connect and verify a wallet using Nami or CCVault." 
   }
 ]
