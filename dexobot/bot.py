@@ -11,12 +11,13 @@ from blockfrost import BlockFrostApi, ApiError, ApiUrls
 import binascii
 import urllib.parse
 
+
 class Colors:
 
     SUCCESS = 0x09A67B
-    FAIL = 0xc8414c
+    FAIL = 0xC8414C
     INFO = 0xFF5ACD
-    STATUSQUO = 0x60d4fb
+    STATUSQUO = 0x60D4FB
 
 
 def constant(body):
@@ -36,7 +37,7 @@ def constant(body):
         "type": "rich",
         "title": phrase,
         "footer": {"text": "With 💖, DexoBot"},
-        "color": Colors.STATUSQUO
+        "color": Colors.STATUSQUO,
     }
 
     return {"embeds": [embed], "flags": 64}
@@ -115,9 +116,7 @@ def whitelist(body):
     #    error_title = "<:sadfrog:898565061239521291> You don't have permission to whitelist."
     #    error_message = "Sorry, the whitelist function is for certain roles only. Please see <#900299272996671518> for more information.\nThank you for your enthusiasm, and stay tuned!"
     if address[:4] == "addr" and len(address) < 58:
-        error_title = (
-            "😢 There was an error processing your address."
-        )
+        error_title = "😢 There was an error processing your address."
         error_message = f"Address too short!"
         fields.append(
             {
@@ -133,7 +132,7 @@ def whitelist(body):
             "title": error_title,
             "description": error_message,
             "footer": {"text": "With 💖, DexoBot"},
-            "color": Colors.FAIL
+            "color": Colors.FAIL,
         }
 
         embed["fields"] = fields
@@ -212,7 +211,7 @@ def add_whitelist_entry(body):
     embed = {
         "type": "rich",
         "footer": {"text": "With 💖, DexoBot"},
-        "color": Colors.FAIL
+        "color": Colors.FAIL,
     }
 
     fields = []
@@ -293,7 +292,9 @@ def add_whitelist_entry(body):
 
         if current_info.exists:
             # update the already-existign entry
-            guild.collection("whitelist").document(str(info["user_id"])).set(info, merge=True)
+            guild.collection("whitelist").document(str(info["user_id"])).set(
+                info, merge=True
+            )
 
             guild.collection("config").document("stats").set(
                 {"n_calls": firestore.Increment(1)}, merge=True
@@ -370,7 +371,7 @@ def manually_add_user(body):
     embed = {
         "type": "rich",
         "footer": {"text": "With 💖, DexoBot"},
-        "color": Colors.FAIL
+        "color": Colors.FAIL,
     }
 
     fields = []
@@ -574,7 +575,7 @@ def manually_remove_user(body):
         "footer": {"text": "With 💖, DexoBot"},
         "title": title,
         "description": description,
-        "color": color
+        "color": color,
     }
 
     print("Sending discord_update")
@@ -626,7 +627,7 @@ def check_whitelist(body):
             "title": error_title,
             "description": error_message,
             "footer": {"text": "With 💖, DexoBot"},
-            "color": Colors.FAIL
+            "color": Colors.FAIL,
         }
 
         print(f"ERROR: {error_title} -- {error_message}")
@@ -705,7 +706,7 @@ def check_whitelist_followup(body):
         "type": "rich",
         # "author": {"name": "Happy Hoppers Main Drop"},
         "footer": {"text": "With 💖, DexoBot"},
-        "color": Colors.FAIL
+        "color": Colors.FAIL,
     }
 
     # if WL not open yet
@@ -841,7 +842,6 @@ def manually_check_user(body):
             },
         )
 
-
         fields.append(
             {
                 "name": "Provided Address",
@@ -878,7 +878,7 @@ def manually_check_user(body):
         "title": title,
         "description": description,
         "color": color,
-        "fields": fields
+        "fields": fields,
     }
 
     print("Sending discord_update")
@@ -1317,7 +1317,9 @@ def get_whitelist_info(body):
             else "None set"
         )
         end_timestamp = (
-            f"<t:{int(times.get('end').timestamp())}:F>" if times.get("end") else "None set"
+            f"<t:{int(times.get('end').timestamp())}:F>"
+            if times.get("end")
+            else "None set"
         )
 
     else:
@@ -1427,7 +1429,7 @@ def set_channel(body):
         "footer": {"text": "With 💖, DexoBot"},
         "title": title,
         "description": description,
-        "color": color
+        "color": color,
     }
 
     success, response = helper.update_discord_message(
@@ -1474,7 +1476,12 @@ def remove_channel(body):
         title = f"🤔 Whitelist was already open in all channels"
         color = Colors.STATUSQUO
 
-    embed = {"type": "rich", "footer": {"text": "With 💖, DexoBot"}, "title": title, "color": color}
+    embed = {
+        "type": "rich",
+        "footer": {"text": "With 💖, DexoBot"},
+        "title": title,
+        "color": color,
+    }
 
     success, response = helper.update_discord_message(
         body["original_body"]["application_id"],
@@ -1725,7 +1732,7 @@ def set_api_key(body):
         "type": "rich",
         "footer": {"text": "With 💖, DexoBot"},
         "title": "🔐 Successfully set API key!",
-        "color": Colors.SUCCESS
+        "color": Colors.SUCCESS,
     }
 
     success, response = helper.update_discord_message(
@@ -1770,6 +1777,7 @@ def verify_loader(body):
 
     return helper.loader("Loading... DexoBot Friend is here to help!")
 
+
 def verify(body):
 
     # connect to firebase
@@ -1797,13 +1805,23 @@ def verify(body):
     token = secrets.token_urlsafe(16)
 
     # create JWT with the token
-    expiration = dt.datetime.now(tz=dt.timezone.utc)+dt.timedelta(hours=1)  # expires in 1hr
+    expiration = dt.datetime.now(tz=dt.timezone.utc) + dt.timedelta(
+        hours=1
+    )  # expires in 1hr
     payload = {"user_id": user_id, "exp": expiration, "iss": "DexoBot Friend"}
     encoded = jwt.encode(payload, token)
 
     # add token info to firebase
 
-    db.collection("users").document(user_id).set({"last_jwt": encoded, "last_secret": token, "jwt_exp": expiration, "from_guild": guild_id}, merge=True)
+    db.collection("users").document(user_id).set(
+        {
+            "last_jwt": encoded,
+            "last_secret": token,
+            "jwt_exp": expiration,
+            "from_guild": guild_id,
+        },
+        merge=True,
+    )
 
     # return URL with JWT attached
     embed = {
@@ -1811,7 +1829,7 @@ def verify(body):
         "footer": {"text": "With 💖, DexoBot"},
         "title": "🧑‍🚀 Please follow the link below to connect and verify a wallet:",
         "description": "[<a:arrow_right:949342031166193714> Click me!](http://dexoworlds.com)",
-        "color": Colors.INFO
+        "color": Colors.INFO,
     }
 
     success, response = helper.update_discord_message(
