@@ -1810,6 +1810,9 @@ def verify(body):
     )  # expires in 1hr
     payload = {
         "user_id": user_id,
+        "avatar": user["user"]["avatar"],
+        "name": user["user"]["username"],
+        "disc": user["user"]["discriminator"],
         "exp": expiration,
         "iss": "DexoBot Friend",
         "guild": guild_id,
@@ -1822,6 +1825,9 @@ def verify(body):
         {
             "last_jwt": encoded,
             "last_secret": token,
+            "avatar": user["user"]["avatar"],
+            "username": user["user"]["username"],
+            "discriminator": user["user"]["discriminator"],
             "jwt_exp": expiration,
             "from_guild": guild_id,
         },
