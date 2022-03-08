@@ -1839,7 +1839,7 @@ def verify(body):
         "type": "rich",
         "footer": {"text": "With 💖, DexoBot"},
         "title": "🧑‍🚀 Please follow the link below to connect and verify a wallet:",
-        "description": "[<a:arrow_right:949342031166193714> Click me!](http://dexoworlds.com)",
+        "description": f"[<a:arrow_right:949342031166193714> Click me!](http://dev-api.dexoworlds.com/{user_id}/connect?token={encoded})",
         "color": Colors.INFO,
     }
 
