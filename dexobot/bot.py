@@ -235,7 +235,7 @@ def add_whitelist_entry(body):
 
         poolpm = f"https://pool.pm/{stake_info}"
 
-        title = "✨ Successfully submitted to the whitelist!"
+        title = "✨ Congrats! Your address has been added to the whitelist!"
         description = f"[**💢 Check your address on pool.pm 💢**]({poolpm})\n**[<a:arrow_right:949342031166193714>{info['stake_address']}]({poolpm})**"
 
         fields.append(
@@ -249,7 +249,7 @@ def add_whitelist_entry(body):
         fields.append(
             {
                 "name": "👀 Note",
-                "value": "You can check your status at any time with the `/check_whitelist` command.",
+                "value": "You can confirm your status at any time with the `/check_whitelist` command.",
                 "inline": False,
             },
         )
