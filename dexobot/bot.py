@@ -2030,8 +2030,8 @@ def remove_holder_role(body):
         description = "You can add a role rule with the `/add_holder_role` command."
         color = Colors.FAIL
     else:
-        title = f"Creating new policy verification."
-        description = f"Role: <@&{role_to_remove}> will removed for holders of the policy ID \n`{roles[role_to_remove]['policy']}`"
+        title = f"Successfully removed role from holder verification."
+        description = f"Role: <@&{role_to_remove}> will no longer be assigned to holders of the policy ID \n`{roles[role_to_remove]['policy']}`"
         color = Colors.SUCCESS
 
         # remove the role / policy ID in database
