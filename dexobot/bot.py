@@ -1875,7 +1875,7 @@ def verify(body):
                     },
                 ],
             }
-        ],
+        ]
 
     success, response = helper.update_discord_message(
         body["original_body"]["application_id"],
