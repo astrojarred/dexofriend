@@ -1869,7 +1869,7 @@ def verify(body):
                     {
                         "type": 2,
                         "label": "To the Portal",
-                        "style": 1,
+                        "style": 5,
                         "url": f"https://dev-api.dexoworlds.com/verify/{user_id}/connect?token={encoded}",
                         "emoji": {"id": None, "name": "🪐"},
                     },
