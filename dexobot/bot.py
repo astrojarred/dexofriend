@@ -1969,8 +1969,8 @@ def view_holder_roles(body):
         color = Colors.INFO
         for k, v in roles.items():
             fields.append({
-                "name": f"<@&{k}> Policy ID:",
-                "value": f"`{v['policy']}`",
+                "name": f"Policy ID: `{v['policy']}`",
+                "value": f"Role: <@&{k}>",
                 "inline": False,
             })
 
