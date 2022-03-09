@@ -1854,6 +1854,16 @@ def verify(body):
         # give old token
         encoded = user_info["last_jwt"]
 
+        # update database with discord call
+        db.collection("users").document(user_id).set(
+            {
+                "last_application_id": body["original_body"]["application_id"],
+                "last_discord_token": body["original_body"]["token"],
+                "last_discord_call": firestore.SERVER_TIMESTAMP
+            },
+            merge=True,
+        )
+
     if wallets:
         description = f"FYI: You've already connected {len(wallets)} wallets."
     else:
