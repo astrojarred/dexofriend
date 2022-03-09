@@ -1804,6 +1804,7 @@ def verify(body):
     user_id = user["user"]["id"]
 
     user_info = db.collection("users").document(user_id).get().to_dict()
+    wallets = user_info.get("stake_addresses")
 
     issue_new_token = True
     if user_info:
@@ -1853,11 +1854,17 @@ def verify(body):
         # give old token
         encoded = user_info["last_jwt"]
 
+    if wallets:
+        description = f"FYI: You've already connected {len(wallets)} wallets."
+    else:
+        description = f"FYI: You haven't connected any wallets yet."
+
     # return URL with JWT attached
     embed = {
         "type": "rich",
         "footer": {"text": "With 💖, DexoBot"},
-        "title": "🧑‍🚀 Please click the button below to connect and verify a wallet!",
+        "title": "🧑‍🚀 Please click the button below to manage your wallets!",
+        "description": description,
         #"description": f"[<a:arrow_right:949342031166193714> Click me!](https://dev-api.dexoworlds.com/verify/{user_id}/connect?token={encoded})",
         "color": Colors.INFO,
     }
