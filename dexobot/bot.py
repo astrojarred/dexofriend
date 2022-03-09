@@ -1806,7 +1806,7 @@ def verify(body):
 
     # create JWT with the token
     expiration = dt.datetime.now(tz=dt.timezone.utc) + dt.timedelta(
-        hours=1
+        days=1
     )  # expires in 1hr
     payload = {
         "user_id": user_id,
