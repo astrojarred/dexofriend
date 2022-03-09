@@ -1802,37 +1802,52 @@ def verify(body):
     user = body["member"]
     user_id = user["user"]["id"]
 
-    token = secrets.token_urlsafe(16)
+    user_info = db.collection("users").document(user_id).get().to_dict()
 
-    # create JWT with the token
-    expiration = dt.datetime.now(tz=dt.timezone.utc) + dt.timedelta(
-        days=1
-    )  # expires in 1hr
-    payload = {
-        "user_id": user_id,
-        "avatar": user["user"]["avatar"],
-        "name": user["user"]["username"],
-        "disc": user["user"]["discriminator"],
-        "exp": expiration,
-        "iss": "DexoBot Friend",
-        "guild": guild_id,
-    }
-    encoded = jwt.encode(payload, token)
+    issue_new_token = True
+    if user_info:
+        last_exp = user_info.get("jwt_exp") 
+        if last_exp:
+            if dt.datetime.now(tz=dt.timezone.utc) - last_exp < dt.timedelta(days=1):
+                issue_new_token = False
 
-    # add token info to firebase
+    if issue_new_token:
 
-    db.collection("users").document(user_id).set(
-        {
-            "last_jwt": encoded,
-            "last_secret": token,
+        token = secrets.token_urlsafe(16)
+
+        # create JWT with the token
+        expiration = dt.datetime.now(tz=dt.timezone.utc) + dt.timedelta(
+            days=1, minutes=10
+        )  # expires in 1hr
+        payload = {
+            "user_id": user_id,
             "avatar": user["user"]["avatar"],
-            "username": user["user"]["username"],
-            "discriminator": user["user"]["discriminator"],
-            "jwt_exp": expiration,
-            "from_guild": guild_id,
-        },
-        merge=True,
-    )
+            "name": user["user"]["username"],
+            "disc": user["user"]["discriminator"],
+            "exp": expiration,
+            "iss": "DexoBot Friend",
+            "guild": guild_id,
+        }
+        encoded = jwt.encode(payload, token)
+
+        # add token info to firebase
+
+        db.collection("users").document(user_id).set(
+            {
+                "last_jwt": encoded,
+                "last_secret": token,
+                "avatar": user["user"]["avatar"],
+                "username": user["user"]["username"],
+                "discriminator": user["user"]["discriminator"],
+                "jwt_exp": expiration,
+                "from_guild": guild_id,
+            },
+            merge=True,
+        )
+    
+    else:
+        # give old token
+        encoded = user_info["last_jwt"]
 
     # return URL with JWT attached
     embed = {
