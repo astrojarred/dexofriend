@@ -1857,15 +1857,30 @@ def verify(body):
     embed = {
         "type": "rich",
         "footer": {"text": "With 💖, DexoBot"},
-        "title": "🧑‍🚀 Please follow the link below to connect and verify a wallet:",
-        "description": f"[<a:arrow_right:949342031166193714> Click me!](https://dev-api.dexoworlds.com/verify/{user_id}/connect?token={encoded})",
+        "title": "🧑‍🚀 Please click the button below to connect and verify a wallet!",
+        #"description": f"[<a:arrow_right:949342031166193714> Click me!](https://dev-api.dexoworlds.com/verify/{user_id}/connect?token={encoded})",
         "color": Colors.INFO,
     }
+
+    components = [
+            {
+                "type": 1,
+                "components": [
+                    {
+                        "type": 2,
+                        "label": "To the Portal",
+                        "style": 1,
+                        "url": f"https://dev-api.dexoworlds.com/verify/{user_id}/connect?token={encoded}",
+                        "emoji": {"id": None, "name": "🪐"},
+                    },
+                ],
+            }
+        ],
 
     success, response = helper.update_discord_message(
         body["original_body"]["application_id"],
         body["original_body"]["token"],
-        {"embeds": [embed]},
+        {"embeds": [embed], "components": components},
     )
 
     if success:
