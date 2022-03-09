@@ -1,3 +1,4 @@
+from re import M
 from dexobot import helper
 
 from os import getenv
@@ -1841,6 +1842,9 @@ def verify(body):
                 "discriminator": user["user"]["discriminator"],
                 "jwt_exp": expiration,
                 "from_guild": guild_id,
+                "last_application_id": body["original_body"]["application_id"],
+                "last_discord_token": body["original_body"]["token"],
+                "last_discord_call": firestore.SERVER_TIMESTAMP
             },
             merge=True,
         )
