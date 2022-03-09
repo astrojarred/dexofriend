@@ -1967,7 +1967,7 @@ def view_holder_roles(body):
         title = f"There are {len(roles)} holder role conditions set up."
         description = f"Details below:"
         color = Colors.INFO
-        for k, v in roles:
+        for k, v in roles.items():
             fields.append({
                 "name": f"<@&{k}> Policy ID:",
                 "value": f"`{v['policy']}`",
