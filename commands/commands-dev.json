@@ -254,5 +254,42 @@
     "name": "verify",
     "type": 1,
     "description": "Connect and verify a wallet using Nami or CCVault." 
+  },
+  {
+    "name": "add_holder_role",
+    "type": 1,
+    "description": "Add a role that will be granted to holders of a policy",
+    "options": [
+      {
+        "name": "role",
+        "description": "Role you would like to be assigned to holders.",
+        "type": 8,
+        "required": 1
+      },
+      {
+        "name": "policy_id",
+        "description": "Policy ID to verify in holders wallets.",
+        "type": 3,
+        "required": 1
+      }
+    ]
+  },
+  {
+    "name": "view_holder_roles",
+    "type": 1,
+    "description": "View roles granted to holders."
+  },
+  {
+    "name": "remove_holder_role",
+    "type": 1,
+    "description": "Remove role granted to holders of a policy",
+    "options": [
+      {
+        "name": "role",
+        "description": "Role you would like to stop assigning to holders.",
+        "type": 8,
+        "required": 1
+      }
+    ]
   }
 ]

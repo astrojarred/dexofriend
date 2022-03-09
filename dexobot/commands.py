@@ -21,7 +21,10 @@ ALL_COMMANDS = {
     "manually_check_user": bot_manual("manually_check_user", bot.manually_check_user, bot.admin_loader),
     "set_api_key": bot_manual("set_api_key", bot.set_api_key, bot.admin_loader),
     "verify": bot_manual("verify_loader", bot.verify_loader),
-    "verify_followup": bot_manual("verify", bot.verify)
+    "verify_followup": bot_manual("verify", bot.verify),
+    "add_holder_role": bot_manual("add_holder_role", bot.add_holder_role),
+    "view_holder_roles": bot_manual("view_holder_roles", bot.view_holder_roles),
+    "remove_holder_role": bot_manual("remove_holder_role", bot.remove_holder_role),
 }
 
 def check_command(body):

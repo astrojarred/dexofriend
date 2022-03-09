@@ -1870,3 +1870,190 @@ def verify(body):
         print(f"ERROR: Could not update discord messages: {response}")
 
     return None
+
+
+def add_holder_role(body):
+
+    # check the whitelist
+    import firebase_admin
+    from firebase_admin import credentials
+    from firebase_admin import firestore
+
+    print("Connecting to firestore.")
+    # Use the application default credentials
+    if not firebase_admin._apps:
+        cert = json.loads(getenv("FIREBASE_CERT"))
+        cred = credentials.Certificate(cert)
+        firebase_app = firebase_admin.initialize_app(cred)
+
+    db = firestore.client()
+
+    guild_id = body["guild_id"]
+    guild = db.collection("servers").document(guild_id)
+
+    params = helper.parse_options(body["data"]["options"])
+
+    roles = {}
+    for role in guild.collection("roles").stream():
+        roles[role.id] = role.to_dict()
+
+    new_role = params["role"]["value"]
+    new_policy = params["policy_id"]["value"]
+
+    title = ""
+    if new_role in roles.keys():
+        title = f"Updating the role policy ID."
+    else:
+        title = f"Creating new policy verification."
+
+    description = f"Role: <@&{new_role}> will be assigned to policy:\n`{new_policy}`"
+    color = Colors.STATUSQUO
+
+    # update policy ID in database
+    guild.collection("roles").document(new_role).set({"policy": new_policy})
+
+    embed = {
+        "type": "rich",
+        "footer": {"text": "With 💖, DexoBot"},
+        "title": title,
+        "description": description,
+        "color": color,
+    }
+
+    success, response = helper.update_discord_message(
+        body["original_body"]["application_id"],
+        body["original_body"]["token"],
+        {"embeds": [embed]},
+    )
+
+    if success:
+        print(f"Successfully sent update: {embed}")
+    else:
+        print(f"ERROR: Could not update discord messages: {response}")
+
+    return None
+
+
+def view_holder_roles(body):
+
+    # check the whitelist
+    import firebase_admin
+    from firebase_admin import credentials
+    from firebase_admin import firestore
+
+    print("Connecting to firestore.")
+    # Use the application default credentials
+    if not firebase_admin._apps:
+        cert = json.loads(getenv("FIREBASE_CERT"))
+        cred = credentials.Certificate(cert)
+        firebase_app = firebase_admin.initialize_app(cred)
+
+    db = firestore.client()
+
+    guild_id = body["guild_id"]
+    guild = db.collection("servers").document(guild_id)
+
+
+    roles = {}
+    for role in guild.collection("roles").stream():
+        roles[role.id] = role.to_dict()
+
+    fields = []
+    if not roles:
+        title = "There are not currently any roles for holders set up."
+        description = "You can use the `add_holder_role` to set one up."
+        color = Colors.FAIL
+    else:
+        title = f"There are {len(roles)} holder role conditions set up."
+        description = f"Details below:"
+        color = Colors.INFO
+        for k, v in roles:
+            fields.append({
+                "name": f"<@&{k}> Policy ID:",
+                "value": f"`{v['policy']}`",
+                "inline": False,
+            })
+
+
+    embed = {
+        "type": "rich",
+        "footer": {"text": "With 💖, DexoBot"},
+        "title": title,
+        "description": description,
+        "color": color,
+        "fields": fields,
+    }
+
+    success, response = helper.update_discord_message(
+        body["original_body"]["application_id"],
+        body["original_body"]["token"],
+        {"embeds": [embed]},
+    )
+
+    if success:
+        print(f"Successfully sent update: {embed}")
+    else:
+        print(f"ERROR: Could not update discord messages: {response}")
+
+    return None
+
+def remove_holder_role(body):
+
+    # check the whitelist
+    import firebase_admin
+    from firebase_admin import credentials
+    from firebase_admin import firestore
+
+    print("Connecting to firestore.")
+    # Use the application default credentials
+    if not firebase_admin._apps:
+        cert = json.loads(getenv("FIREBASE_CERT"))
+        cred = credentials.Certificate(cert)
+        firebase_app = firebase_admin.initialize_app(cred)
+
+    db = firestore.client()
+
+    guild_id = body["guild_id"]
+    guild = db.collection("servers").document(guild_id)
+
+    params = helper.parse_options(body["data"]["options"])
+
+    roles = {}
+    for role in guild.collection("roles").stream():
+        roles[role.id] = role.to_dict()
+
+    role_to_remove = params["role"]["value"]
+
+    title = ""
+    if role_to_remove not in roles.keys():
+        title = f"Role is not currently assigned to any policy ID."
+        description = "You can add a role rule with the `/add_holder_role` command."
+        color = Colors.FAIL
+    else:
+        title = f"Creating new policy verification."
+        description = f"Role: <@&{role_to_remove}> will removed for holders of the policy ID \n`{roles[role_to_remove]['policy']}`"
+        color = Colors.SUCCESS
+
+        # remove the role / policy ID in database
+        guild.collection("roles").document(role_to_remove).delete()
+
+    embed = {
+        "type": "rich",
+        "footer": {"text": "With 💖, DexoBot"},
+        "title": title,
+        "description": description,
+        "color": color,
+    }
+
+    success, response = helper.update_discord_message(
+        body["original_body"]["application_id"],
+        body["original_body"]["token"],
+        {"embeds": [embed]},
+    )
+
+    if success:
+        print(f"Successfully sent update: {embed}")
+    else:
+        print(f"ERROR: Could not update discord messages: {response}")
+
+    return None
