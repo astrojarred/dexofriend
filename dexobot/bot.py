@@ -1804,10 +1804,11 @@ def verify(body):
     user_id = user["user"]["id"]
 
     user_info = db.collection("users").document(user_id).get().to_dict()
-    wallets = user_info.get("stake_addresses")
+    wallets = []
 
     issue_new_token = True
     if user_info:
+        wallets = user_info.get("stake_addresses")
         last_exp = user_info.get("jwt_exp") 
         if last_exp:
             if dt.datetime.now(tz=dt.timezone.utc) - last_exp < dt.timedelta(days=1):
