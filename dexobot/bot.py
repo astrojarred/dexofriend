@@ -1857,6 +1857,7 @@ def verify(body):
         # update database with discord call
         db.collection("users").document(user_id).set(
             {
+                "from_guild": guild_id,
                 "last_application_id": body["original_body"]["application_id"],
                 "last_discord_token": body["original_body"]["token"],
                 "last_discord_call": firestore.SERVER_TIMESTAMP
