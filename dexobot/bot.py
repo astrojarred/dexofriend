@@ -1947,7 +1947,7 @@ def add_holder_role(body):
     color = Colors.STATUSQUO
 
     # update policy ID in database
-    guild.collection("roles").document(new_role).set({"policy": new_policy})
+    guild.collection("config").document("roles").set({new_role: new_policy}, merge=True)
 
     embed = {
         "type": "rich",
@@ -1990,10 +1990,7 @@ def view_holder_roles(body):
     guild_id = body["guild_id"]
     guild = db.collection("servers").document(guild_id)
 
-
-    roles = {}
-    for role in guild.collection("roles").stream():
-        roles[role.id] = role.to_dict()
+    roles = guild.collection("config").document("roles").get().to_dict()
 
     fields = []
     if not roles:
@@ -2006,7 +2003,7 @@ def view_holder_roles(body):
         color = Colors.INFO
         for k, v in roles.items():
             fields.append({
-                "name": f"Policy ID: `{v['policy']}`",
+                "name": f"Policy ID: `{v}`",
                 "value": f"Role: <@&{k}>",
                 "inline": False,
             })
@@ -2055,9 +2052,7 @@ def remove_holder_role(body):
 
     params = helper.parse_options(body["data"]["options"])
 
-    roles = {}
-    for role in guild.collection("roles").stream():
-        roles[role.id] = role.to_dict()
+    roles = guild.collection("config").document("roles").get().to_dict()
 
     role_to_remove = params["role"]["value"]
 
@@ -2068,11 +2063,12 @@ def remove_holder_role(body):
         color = Colors.FAIL
     else:
         title = f"Successfully removed role from holder verification."
-        description = f"Role: <@&{role_to_remove}> will no longer be assigned to holders of the policy ID \n`{roles[role_to_remove]['policy']}`"
+        description = f"Role: <@&{role_to_remove}> will no longer be assigned to holders of the policy ID \n`{roles[role_to_remove]}`"
         color = Colors.SUCCESS
 
         # remove the role / policy ID in database
-        guild.collection("roles").document(role_to_remove).delete()
+        del roles[role_to_remove]
+        guild.collection("config").document("roles").set(roles)
 
     embed = {
         "type": "rich",
