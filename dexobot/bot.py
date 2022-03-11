@@ -1806,13 +1806,13 @@ def verify(body):
     user_info = db.collection("users").document(user_id).get().to_dict()
     wallets = []
 
-    issue_new_token = True
+    issue_new_token = False
     if user_info:
         wallets = user_info.get("stake_addresses")
         last_exp = user_info.get("jwt_exp") 
         if last_exp:
             if last_exp - dt.datetime.now(tz=dt.timezone.utc) < dt.timedelta(minutes=10):
-                issue_new_token = False
+                issue_new_token = True
 
     if issue_new_token:
 
