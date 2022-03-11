@@ -1811,7 +1811,7 @@ def verify(body):
         wallets = user_info.get("stake_addresses")
         last_exp = user_info.get("jwt_exp") 
         if last_exp:
-            if dt.datetime.now(tz=dt.timezone.utc) - last_exp < dt.timedelta(days=1):
+            if last_exp - dt.datetime.now(tz=dt.timezone.utc) < dt.timedelta(minutes=10):
                 issue_new_token = False
 
     if issue_new_token:
