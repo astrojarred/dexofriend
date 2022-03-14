@@ -291,5 +291,31 @@
         "required": 1
       }
     ]
+  },
+  {
+    "name": "donate",
+    "type": 1,
+    "description": "Donate WL spots to support bot development. Spots will be raffled within 72h.",
+    "options": [
+      {
+        "name": "how_many",
+        "description": "How many spots you would like to donate.",
+        "type": 4,
+        "required": 1,
+        "min_value": 1
+      },
+      {
+        "name": "message",
+        "description": "Personal you want to send to the giveaway entrants.",
+        "type": 8,
+        "required": 0
+      },
+      {
+        "name": "role",
+        "description": "Role that the winners should be automatically assigned.",
+        "type": 8,
+        "required": 0
+      }
+    ]
   }
 ]

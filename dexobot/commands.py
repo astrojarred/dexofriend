@@ -25,6 +25,7 @@ ALL_COMMANDS = {
     "add_holder_role": bot_manual("add_holder_role", bot.add_holder_role, bot.admin_loader),
     "view_holder_roles": bot_manual("view_holder_roles", bot.view_holder_roles, bot.admin_loader),
     "remove_holder_role": bot_manual("remove_holder_role", bot.remove_holder_role, bot.admin_loader),
+    "donate": bot_manual("donate", bot.donate, bot.admin_loader),
 }
 
 def check_command(body):
