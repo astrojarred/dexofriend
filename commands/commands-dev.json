@@ -307,7 +307,7 @@
       {
         "name": "message",
         "description": "Personal you want to send to the giveaway entrants.",
-        "type": 8,
+        "type": 3,
         "required": 0
       },
       {
