@@ -2159,22 +2159,36 @@ def donate(body):
     print(f"Invite info:", invite)
     invite_url = f"https://discord.gg/{invite.get('code')}"
 
-
     # get dexobot settings
     dexobot_config = db.collection("config").document("channels").get().to_dict()
 
+    donation_start = dt.datetime.now(dt.timezone.utc)
+    donation_end = donation_start + dt.timedelta(hours=72)
+
+    # set up mention rules
+    mentions = {
+        "roles": [
+            dexobot_config.get("test_starlords_role"),
+            dexobot_config.get("test_holders_role"),
+        ]
+    }
+
     # send discord messages (with dexobot!)
+    content = (
+        f"<@&{dexobot_config.get('test_holders_role')}> WL donation from {guild_name}!"
+    )
+
     embed = {
         "type": "rich",
         "footer": {"text": "With 💖, DexoFriend"},
         "title": f"{n_worlds} WL spot{'s' if n_worlds > 1 else ''} for DexoWorld Holders at {guild_name}!",
         "description": "Use the buttons below to enter. It's helpful to join their server before the raffle ends, just in case you need to get a special role assigned.",
-        "color": Colors.INFO,
+        "color": 0xFF5ACD,
         "thumbnail": {"url": f"https://cdn.discordapp.com/icons/{guild_id}/{icon}.png"},
         "fields": [
             {
                 "name": "Ends",
-                "value":  f"<t:{int(donation_end.timestamp())}:R>",
+                "value": f"<t:{int(donation_end.timestamp())}:R>",
                 "inline": False,
             },
             {
@@ -2184,35 +2198,87 @@ def donate(body):
             },
             {
                 "name": "Server Invite Link",
-                "value": f"({invite_url})[Click here to join the server]",
+                "value": f"[Click here to join the server]({invite_url})",
                 "inline": False,
             },
-        ]
+        ],
     }
 
+    holder_button = [
+        {
+            "type": 1,
+            "components": [
+                {
+                    "type": 2,
+                    "label": "Enter",
+                    "style": 1,
+                    "custom_id": f"enter-h-{donation_id}",
+                    "emoji": {"id": None, "name": "✨"},
+                },
+            ],
+        }
+    ]
+
+    starlord_button = [
+        {
+            "type": 1,
+            "components": [
+                {
+                    "type": 2,
+                    "label": "Enter",
+                    "style": 1,
+                    "custom_id": f"enter-s-{donation_id}",
+                    "emoji": {"id": None, "name": "✨"},
+                },
+            ],
+        }
+    ]
+
     # send the discord message
-    holders_message = helper.post_channel_message({"embeds": [embed]}, dexobot_config.get("test_holders"), getenv("DEXOBOT_TOKEN"))
+    holders_message = helper.post_channel_message(
+        {
+            "content": content,
+            "embeds": [embed],
+            "components": holder_button,
+            "allowed_mentions": mentions,
+        },
+        dexobot_config.get("test_holders"),
+        getenv("DEXOBOT_TOKEN"),
+    )
 
-    embed["title"] = f"{n_stars} WL spot{'s' if n_worlds > 1 else ''} for Dexo Starlords at {guild_name}!",
+    embed[
+        "title"
+    ] = f"{n_stars} WL spot{'s' if n_worlds > 1 else ''} for Dexo Starlords at {guild_name}!"
+    content = f"<@&{dexobot_config.get('test_starlords_role')}> WL donation from {guild_name}!"
 
-    starlord_message = helper.post_channel_message({"embeds": [embed]}, dexobot_config.get("test_starlords"), getenv("DEXOBOT_TOKEN"))
-
+    starlord_message = helper.post_channel_message(
+        {
+            "content": content,
+            "embeds": [embed],
+            "components": starlord_button,
+            "allowed_mentions": mentions,
+        },
+        dexobot_config.get("test_starlords"),
+        getenv("DEXOBOT_TOKEN")
+    )
 
     # add info to database
     info = {
+        "guild_id": guild_id,
+        "guild_name": guild_name,
         "donation_begin": donation_start,
         "donation_end": donation_end,
-        "n_spots": n_spots,
+        "n_spots": n_worlds + n_stars,
         "n_worlds": n_worlds,
         "n_stars": n_stars,
-        "winner_role": role,
-        "message": message,
+        "winner_role": None,
+        "message": "thanks!",
         "invite_url": invite_url,
         "holders_message": holders_message,
-        "starlords_message": starlord_message
+        "starlords_message": starlord_message,
     }
 
-    guild.collection("donations").document(donation_id).set(info, merge=True)
+    db.collection("donations").document(donation_id).set(info, merge=True)
 
     success_embed = {
         "type": "rich",
@@ -2223,21 +2289,21 @@ def donate(body):
         "fields": [
             {
                 "name": "Twitter",
-                "value":  "(https://twitter.com/pastapleas3)[pastaplease]",
+                "value": "[pastaplease](https://twitter.com/pastapleas3)",
                 "inline": False,
             },
             {
                 "name": "Discord",
-                "value":  "pastaplease#2823",
+                "value": "pastaplease#2823",
                 "inline": False,
-            }
-        ]
+            },
+        ],
     }
 
     success, response = helper.update_discord_message(
         body["original_body"]["application_id"],
         body["original_body"]["token"],
-        {"embeds": [success_embed], "flags": 64}
+        {"embeds": [success_embed], "flags": 64},
     )
 
     if success:
