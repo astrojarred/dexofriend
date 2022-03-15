@@ -2126,6 +2126,8 @@ def donate(body):
     role = params.get("role")["value"] if params.get("role") else None
     message = params.get("message")["value"] if params.get("message") else None
 
+    print("GOT:", n_spots, role, message)
+
     # generate a unique ID for the giveaway, follow the following to get a base64 code
     # https://stackoverflow.com/questions/55354229/converting-an-integer-value-to-base64-and-then-decoding-it-to-get-a-plaintext
     donation_start = dt.datetime.now(dt.timezone.utc)
@@ -2139,19 +2141,24 @@ def donate(body):
     encoded = base64.urlsafe_b64encode(number_bytes)
     donation_id = encoded.decode()
 
+    print(f"donation id: {donation_id}")
+
     # set up number of spots for dexo holders and starlord holders
     n_worlds = floor(n_spots / 2)
     n_stars = ceil(n_spots / 2)
 
     # get guild info
     guild_info = helper.get_guild_info(guild_id)
+    print(guild_info)
     guild_name = guild_info.get("name")
     icon = guild_info.get("icon")
     system_channel_id = guild_info.get("system_channel_id")
 
     # generate server invite link
     invite = helper.create_channel_invite(system_channel_id)
+    print(f"Invite info:", invite)
     invite_url = f"https://discord.gg/{invite.get('code')}"
+
 
     # get dexobot settings
     dexobot_config = db.collection("config").document("channels").get().to_dict()
@@ -2227,4 +2234,15 @@ def donate(body):
         ]
     }
 
-    return {"embeds": [success_embed], "flags": 64}
+    success, response = helper.update_discord_message(
+        body["original_body"]["application_id"],
+        body["original_body"]["token"],
+        {"embeds": [success_embed], "flags": 64}
+    )
+
+    if success:
+        print(f"Successfully sent update: {success_embed}")
+    else:
+        print(f"ERROR: Could not update discord messages: {response}")
+
+    return None
