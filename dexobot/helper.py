@@ -217,7 +217,7 @@ def remove_role(guild_id, user_id, role_id):
 
 def get_guild_info(guild_id, bot_token=None):
 
-    url = f"https://discord.com/api/v9/guilds/{guild_id}/"
+    url = f"https://discord.com/api/v9/guilds/{guild_id}"
 
     headers = {
         "authorization": f'Bot {os.getenv("BOT_TOKEN") if not bot_token else bot_token}',
