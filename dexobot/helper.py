@@ -222,7 +222,7 @@ def get_guild_info(guild_id, bot_token=None):
     headers = {
         "authorization": f'Bot {os.getenv("BOT_TOKEN") if not bot_token else bot_token}',
     }
-    print(f"Adding guild info for guild {guild_id}")
+    print(f"Getting guild info for guild {guild_id}")
     res = requests.get(url, headers=headers)
 
     if res.ok:
