@@ -201,7 +201,7 @@ def remove_role(guild_id, user_id, role_id):
     url = f"https://discord.com/api/v9/guilds/{guild_id}/members/{user_id}/roles/{role_id}"
 
     headers = {
-        "authorization": f'Bot {os.getenv("BOT_TOKEN")}',
+        "authorization": f'Bot {os.getenv("DISCORD_BOT_TOKEN")}',
     }
 
     print(f"Adding role {role_id} to user {user_id}")
@@ -220,7 +220,7 @@ def get_guild_info(guild_id, bot_token=None):
     url = f"https://discord.com/api/v9/guilds/{guild_id}"
 
     headers = {
-        "authorization": f'Bot {os.getenv("BOT_TOKEN") if not bot_token else bot_token}',
+        "authorization": f'Bot {os.getenv("DISCORD_BOT_TOKEN") if not bot_token else bot_token}',
     }
     print(f"Getting guild info for guild {guild_id}")
     res = requests.get(url, headers=headers)
@@ -239,7 +239,7 @@ def create_channel_invite(channel_id, bot_token=None):
     url = f"https://discord.com/api/v9/channels/{channel_id}/invites"
 
     headers = {
-        "authorization": f'Bot {os.getenv("BOT_TOKEN") if not bot_token else bot_token}',
+        "authorization": f'Bot {os.getenv("DISCORD_BOT_TOKEN") if not bot_token else bot_token}',
     }
 
     print(f"Adding guild info for channel {channel_id}")
@@ -258,7 +258,7 @@ def post_channel_message(message_payload, channel_id, bot_token=None):
     url = f"https://discord.com/api/v9/channels/{channel_id}/messages"
 
     headers = {
-        "authorization": f'Bot {os.getenv("BOT_TOKEN") if not bot_token else bot_token}',
+        "authorization": f'Bot {os.getenv("DISCORD_BOT_TOKEN") if not bot_token else bot_token}',
     }
 
     print(f"Adding guild info for channel {channel_id}")
