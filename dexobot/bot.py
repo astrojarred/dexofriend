@@ -2125,7 +2125,7 @@ def donate(body):
     n_spots = params.get("how_many")["value"]
     role = params.get("role")["value"] if params.get("role") else None
     message = params.get("message")["value"] if params.get("message") else None
-    winner_role = params.get("message")["value"] if params.get("role") else None
+    winner_role = params.get("role")["value"] if params.get("role") else None
 
     print("GOT:", n_spots, role, message)
 
