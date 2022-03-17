@@ -2255,6 +2255,8 @@ def donate(body):
             dexobot_config.get("test_holders"),
             getenv("DEXOBOT_TOKEN"),
         )
+    else:
+        holders_message = None
 
     embed[
         "title"
