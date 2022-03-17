@@ -217,17 +217,21 @@ def add_whitelist_entry(body):
 
     fields = []
 
+    # get current info on the whitelist
+    current_info = guild.collection("whitelist").document(info["user_id"]).get()
+
     if not correct_channel:
         title = "😱 Whitelist features are not allowed in this channel."
         description = "Please check with the mods if you are unsure."
 
-    elif not whitelist_open:
-        if not started:
-            title = "⏰ This whitelist is not open yet."
-            description = "Please check back later."
-        else:  # ended
-            title = "⏰ This whitelist is currently closed."
-            description = "Thanks for participating!"
+    elif not current_info.exists:
+        if not whitelist_open:
+            if not started:
+                title = "⏰ This whitelist is not open yet."
+                description = "Please check back later."
+            else:  # ended
+                title = "⏰ This whitelist is currently closed."
+                description = "Thanks for participating!"
 
     elif stake_info:
         info["stake_address"] = stake_info
@@ -236,7 +240,7 @@ def add_whitelist_entry(body):
 
         poolpm = f"https://pool.pm/{stake_info}"
 
-        title = "✨ Congrats! Your address has been added to the whitelist!"
+        title = f"✨ Congrats! Your address has been {'updated on' if current_info.exists else 'added to'} the whitelist!"
         description = f"[**💢 Check your address on pool.pm 💢**]({poolpm})\n**[<a:arrow_right:949342031166193714>{info['stake_address']}]({poolpm})**"
 
         fields.append(
@@ -285,11 +289,10 @@ def add_whitelist_entry(body):
     embed["description"] = description
     embed["fields"] = fields
 
-    if whitelist_open and correct_channel:
+    if (whitelist_open or current_info.exists) and correct_channel:
         print(f"Adding to the whitelist: {info}")
 
-        # get current info on the whitelist
-        current_info = guild.collection("whitelist").document(info["user_id"]).get()
+        # current_info = guild.collection("whitelist").document(info["user_id"]).get()
 
         if current_info.exists:
             # update the already-existign entry
@@ -715,6 +718,40 @@ def check_whitelist_followup(body):
         title = "😱 Whitelist features are not allowed in this channel."
         description = "Please check with the mods if you are unsure."
 
+    elif info:
+        if not info.get("error"):
+
+            poolpm = f"https://pool.pm/{info['stake_address']}"
+            title = "✨ Found whitelisted address!"
+            description = f"[**💢 Check your address on pool.pm 💢**]({poolpm})\n**[<a:arrow_right:949342031166193714>{info['stake_address']}]({poolpm})**\n\nClick the pool.pm link above and make sure it shows the Cardano wallet you intend to send ADA from to mint."
+            embed["color"] = Colors.SUCCESS
+
+        elif info.get("method") == "donation":
+
+            title = "🎉 Almost there: Congrats Dexonaut! You've won a raffle."
+            description ="... but you still need to set an address for the whitelist. Please do so with the `/whitelist` command."
+
+        else:
+
+            title = "😢 There was an error processing the address"
+            description = f"Most likely you have provided an invalid address. Try resubmitting your address or checking if it looks correct on pool.pm.\nFor further support, please copy or screenshot this error message and open a support ticket."
+
+            fields.append(
+                {
+                    "name": "Error",
+                    "value": f"`{info.get('error')}`",
+                    "inline": False,
+                },
+            )
+
+            fields.append(
+                {
+                    "name": "Stake Address",
+                    "value": f"`{info.get('stake_address')}`",
+                    "inline": False,
+                },
+            )
+
     elif not started:
         title = "⏰ Whitelist is not open yet."
         description = "Please check back later."
@@ -723,12 +760,17 @@ def check_whitelist_followup(body):
     else:
 
         if info:
-            if not info["error"]:
+            if not info.get("error"):
 
                 poolpm = f"https://pool.pm/{info['stake_address']}"
                 title = "✨ Found whitelisted address!"
                 description = f"[**💢 Check your address on pool.pm 💢**]({poolpm})\n**[<a:arrow_right:949342031166193714>{info['stake_address']}]({poolpm})**\n\nClick the pool.pm link above and make sure it shows the Cardano wallet you intend to send ADA from to mint."
                 embed["color"] = Colors.SUCCESS
+
+            elif info.get("method") == "donation":
+
+                title = "🎉 Almost there: Congrats Dexonaut! You've won a raffle."
+                description ="... but you still need to set an address for the whitelist. Please do so with the `/whitelist` command."
 
             else:
 
@@ -738,7 +780,7 @@ def check_whitelist_followup(body):
                 fields.append(
                     {
                         "name": "Error",
-                        "value": f"`{info['error']}`",
+                        "value": f"`{info.get('error')}`",
                         "inline": False,
                     },
                 )
@@ -746,7 +788,7 @@ def check_whitelist_followup(body):
                 fields.append(
                     {
                         "name": "Stake Address",
-                        "value": f"`{info['stake_address']}`",
+                        "value": f"`{info.get('stake_address')}`",
                         "inline": False,
                     },
                 )
@@ -814,7 +856,7 @@ def manually_check_user(body):
         print(f"Found current user info for {user_id}")
         info = current_info.to_dict()
 
-        if not info["error"]:
+        if not info.get("error"):
 
             poolpm = f"https://pool.pm/{info['stake_address']}"
             title = "✨ Found whitelisted address!"
