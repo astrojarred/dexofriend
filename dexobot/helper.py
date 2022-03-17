@@ -177,12 +177,12 @@ def post_channel_message(channel_id, payload, bot_token=None):
     return res.json()
 
 
-def add_role(guild_id, user_id, role_id):
+def add_role(guild_id, user_id, role_id, bot_token=None):
 
     url = f"https://discord.com/api/v9/guilds/{guild_id}/members/{user_id}/roles/{role_id}"
 
     headers = {
-        "authorization": f'Bot {os.getenv("BOT_TOKEN")}',
+        "authorization": f'Bot {os.getenv("BOT_TOKEN") if not bot_token else bot_token}',
     }
 
     print(f"Adding role {role_id} to user {user_id}")
@@ -270,6 +270,33 @@ def post_channel_message(message_payload, channel_id, bot_token=None):
         print(f"Error sending request: {res.status_code}")
 
     return res.json()
+
+
+def edit_channel_message(
+    channel_id, message_id, payload, files=None, bot_token=None
+):
+
+    if not bot_token:
+        bot_token = os.getenv("DISCORD_BOT_TOKEN")
+        assert bot_token
+
+    url = f"https://discord.com/api/v9/channels/{channel_id}/messages/{message_id}"
+
+    print("Sending edit message Payload", payload)
+    print("to the URL", url)
+
+    header = {
+         "authorization": f'Bot {os.getenv("BOT_TOKEN") if not bot_token else bot_token}',
+    }
+
+    res = requests.patch(url, json=payload, headers=header, files=files)
+
+    if res.ok:
+        print(f"Payload sent successfully: {res.json()}")
+    else:
+        print(f"Error sending payload: {res.json()}")
+
+    return res.ok, res.json()
 
 
 
