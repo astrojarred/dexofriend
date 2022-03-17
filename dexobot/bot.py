@@ -1109,8 +1109,16 @@ def close_whitelist_now(body):
 
         if selection == "confirm":
 
+            info = guild.collection("config").document("times").get().to_dict()
+
+            begin = info.get("begin")
+            if not begin:
+                begin = firestore.SERVER_TIMESTAMP
+            elif begin > dt.datetime.now(dt.timezone.utc):
+                begin = firestore.SERVER_TIMESTAMP
+
             guild.collection("config").document("times").set(
-                {"begin": None, "end": firestore.SERVER_TIMESTAMP}, merge=True
+                {"begin": begin, "end": firestore.SERVER_TIMESTAMP}, merge=True
             )
 
             embed = {
@@ -2332,6 +2340,7 @@ def donate(body):
         "invite_url": invite_url,
         "holders_message": holders_message,
         "starlords_message": starlord_message,
+        "icon_url": f"https://cdn.discordapp.com/icons/{guild_id}/{icon}.png",
     }
 
     db.collection("donations").document(donation_id).set(info, merge=True)
