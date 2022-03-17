@@ -2273,6 +2273,7 @@ def donate(body):
 
     # add info to database
     info = {
+        "done": False,
         "guild_id": guild_id,
         "guild_name": guild_name,
         "donation_begin": donation_start,
