@@ -2204,6 +2204,15 @@ def donate(body):
         ],
     }
 
+    if message:
+        embed["fields"].append(
+            {
+                "name": f"Message from {guild_name} team",
+                "value": message,
+                "inline": False,
+            }
+        )
+
     holder_button = [
         {
             "type": 1,
@@ -2259,7 +2268,7 @@ def donate(body):
             "allowed_mentions": mentions,
         },
         dexobot_config.get("test_starlords"),
-        getenv("DEXOBOT_TOKEN")
+        getenv("DEXOBOT_TOKEN"),
     )
 
     # add info to database
