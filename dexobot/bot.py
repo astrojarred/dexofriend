@@ -2244,20 +2244,21 @@ def donate(body):
     ]
 
     # send the discord message
-    holders_message = helper.post_channel_message(
-        {
-            "content": content,
-            "embeds": [embed],
-            "components": holder_button,
-            "allowed_mentions": mentions,
-        },
-        dexobot_config.get("test_holders"),
-        getenv("DEXOBOT_TOKEN"),
-    )
+    if n_worlds:
+        holders_message = helper.post_channel_message(
+            {
+                "content": content,
+                "embeds": [embed],
+                "components": holder_button,
+                "allowed_mentions": mentions,
+            },
+            dexobot_config.get("test_holders"),
+            getenv("DEXOBOT_TOKEN"),
+        )
 
     embed[
         "title"
-    ] = f"{n_stars} WL spot{'s' if n_worlds > 1 else ''} for Dexo Starlords at {guild_name}!"
+    ] = f"{n_stars} WL spot{'s' if n_stars > 1 else ''} for Dexo Starlords at {guild_name}!"
     content = f"<@&{dexobot_config.get('test_starlords_role')}> WL donation from {guild_name}!"
 
     starlord_message = helper.post_channel_message(
