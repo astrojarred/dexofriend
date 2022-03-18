@@ -2349,12 +2349,12 @@ def donate(body):
         "type": "rich",
         "footer": {"text": "With 💖, DexoFriend"},
         "title": "Donation successful!",
-        "description": "Winners of the DexoFriend raffle will be automatically added to your whitelist in 72h. Thank you so much for your donation and for supporting DexoFriend and cardano development. If you'd like to stay in the loop on further developments, follow me (pastaplease) on Twitter! If you have questions or feature requests, please contact me on Twitter or Discord.",
+        "description": "Winners of the DexoFriend raffle will be automatically added to your whitelist in 72h. Thank you so much for your donation and for supporting DexoFriend and cardano development. If you'd like to stay in the loop on further developments, follow me (pastapleas3) on Twitter! If you have questions or feature requests, please contact me on Twitter or Discord.",
         "color": Colors.INFO,
         "fields": [
             {
                 "name": "Twitter",
-                "value": "[pastaplease](https://twitter.com/pastapleas3)",
+                "value": "[pastapleas3](https://twitter.com/pastapleas3)",
                 "inline": False,
             },
             {
