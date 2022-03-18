@@ -92,7 +92,10 @@ def whitelist(body):
     guild_id = body["guild_id"]
 
     # the address they submitted
-    address = params["address"]["value"]
+    if params.get("address"):
+        address = params["address"]["value"]
+    else:
+        address = None
 
     # get valid roles - ADD LATER
     # whitelist_role_string = getenv("WHITELIST_ROLES")
@@ -116,16 +119,18 @@ def whitelist(body):
     # if not any(x in whitelist_role_ids for x in user_roles):
     #    error_title = "<:sadfrog:898565061239521291> You don't have permission to whitelist."
     #    error_message = "Sorry, the whitelist function is for certain roles only. Please see <#900299272996671518> for more information.\nThank you for your enthusiasm, and stay tuned!"
-    if address[:4] == "addr" and len(address) < 58:
-        error_title = "😢 There was an error processing your address."
-        error_message = f"Address too short!"
-        fields.append(
-            {
-                "name": "Address",
-                "value": f"`{address}`",
-                "inline": False,
-            },
-        )
+    if address:
+
+        if address[:4] == "addr" and len(address) < 58:
+            error_title = "😢 There was an error processing your address."
+            error_message = f"Address too short!"
+            fields.append(
+                {
+                    "name": "Address",
+                    "value": f"`{address}`",
+                    "inline": False,
+                },
+            )
 
     if error_message:
         embed = {
@@ -179,6 +184,9 @@ def add_whitelist_entry(body):
     from firebase_admin import credentials
     from firebase_admin import firestore
 
+    import jwt
+    import secrets
+
     print("Connecting to firestore.")
     # Use the application default credentials
     if not firebase_admin._apps:
@@ -190,6 +198,7 @@ def add_whitelist_entry(body):
 
     info = body["whitelist_info"]
     guild_id = body["guild_id"]
+    user = body["original_body"]["member"]
     user_permissions = body["user_permissions"]
 
     guild = db.collection("servers").document(guild_id)
@@ -206,8 +215,23 @@ def add_whitelist_entry(body):
 
     # check the cardano address
     provided_address = info["address"]
-    address, stake_info, type_provided = helper.parse_address(provided_address)
-    # got_stake, stake_info = helper.get_stake_address(info["address"])
+    user_id = info["user_id"]
+
+    if provided_address:
+        address, stake_info, type_provided = helper.parse_address(provided_address)
+    else:
+        # no address provided
+        address, stake_info, type_provided = None, None, None
+        
+    # check verified wallets
+    user_info = db.collection("users").document(user_id).get().to_dict()
+
+    if user_info:
+        stake_addresses = user_info.get("stake_addresses")
+        verified = True if stake_addresses else False
+    else:
+        verified = False
+
 
     embed = {
         "type": "rich",
@@ -216,6 +240,7 @@ def add_whitelist_entry(body):
     }
 
     fields = []
+    show_connection = False
 
     # get current info on the whitelist
     current_info = guild.collection("whitelist").document(info["user_id"]).get()
@@ -224,14 +249,13 @@ def add_whitelist_entry(body):
         title = "😱 Whitelist features are not allowed in this channel."
         description = "Please check with the mods if you are unsure."
 
-    elif not current_info.exists:
-        if not whitelist_open:
-            if not started:
-                title = "⏰ This whitelist is not open yet."
-                description = "Please check back later."
-            else:  # ended
-                title = "⏰ This whitelist is currently closed."
-                description = "Thanks for participating!"
+    elif not current_info.exists and not whitelist_open:
+        if not started:
+            title = "⏰ This whitelist is not open yet."
+            description = "Please check back later."
+        else:  # ended
+            title = "⏰ This whitelist is currently closed."
+            description = "Thanks for participating!"
 
     elif stake_info:
         info["stake_address"] = stake_info
@@ -261,7 +285,32 @@ def add_whitelist_entry(body):
 
         embed["color"] = Colors.SUCCESS
 
-    else:
+    elif not address and not verified:
+        # show the option to connect a wallet
+        info["stake_address"] = None
+        info["ok"] = False
+        info["error"] = f"No wallet address provided and no verified wallets."
+
+        title = "🤔 No address provided."
+        description = f"Please re-run the command and either:\n1. Paste an address after the whitelist command\n2. verify a wallet by clicking the button."
+
+        show_connection = True
+
+
+    elif verified:
+
+        # show the option to connect a wallet
+        info["stake_address"] = "verified"
+        info["ok"] = True
+        info["error"] = None
+
+        title = "✨ Congrats! You have been added to the whitelist with the address(es) you've already verified on our portal."
+        description = f"Use the button below to manage your wallets. They will automatically connect with all DexoFriend whitelists."
+
+        show_connection = True
+
+
+    elif provided_address and not stake_info:
         info["stake_address"] = None
         info["ok"] = False
         info["error"] = f"Error calculating stake address: f{stake_info}."
@@ -288,8 +337,101 @@ def add_whitelist_entry(body):
     embed["title"] = title
     embed["description"] = description
     embed["fields"] = fields
+    embed["components"] = []
 
-    if (whitelist_open or current_info.exists) and correct_channel:
+    if show_connection:
+
+        wallets = []
+
+        issue_new_token = False
+        if user_info:
+            wallets = user_info.get("stake_addresses")
+            last_exp = user_info.get("jwt_exp")
+            if last_exp:
+                if last_exp - dt.datetime.now(tz=dt.timezone.utc) < dt.timedelta(
+                    minutes=10
+                ):
+                    issue_new_token = True
+
+        if issue_new_token:
+
+            token = secrets.token_urlsafe(16)
+
+            # create JWT with the token
+            expiration = dt.datetime.now(tz=dt.timezone.utc) + dt.timedelta(
+                days=1, minutes=10
+            )  # expires in 1hr
+            payload = {
+                "user_id": user_id,
+                "avatar": user["user"]["avatar"],
+                "name": user["user"]["username"],
+                "disc": user["user"]["discriminator"],
+                "exp": expiration,
+                "iss": "DexoFriend",
+                "guild": guild_id,
+            }
+            encoded = jwt.encode(payload, token)
+
+            # add token info to firebase
+
+            db.collection("users").document(user_id).set(
+                {
+                    "last_jwt": encoded,
+                    "last_secret": token,
+                    "avatar": user["user"]["avatar"],
+                    "username": user["user"]["username"],
+                    "discriminator": user["user"]["discriminator"],
+                    "jwt_exp": expiration,
+                    "from_guild": guild_id,
+                    "last_application_id": body["original_body"]["application_id"],
+                    "last_discord_token": body["original_body"]["token"],
+                    "last_discord_call": firestore.SERVER_TIMESTAMP,
+                },
+                merge=True,
+            )
+
+        else:
+            # give old token
+            encoded = user_info["last_jwt"]
+
+            # update database with discord call
+            db.collection("users").document(user_id).set(
+                {
+                    "from_guild": guild_id,
+                    "last_application_id": body["original_body"]["application_id"],
+                    "last_discord_token": body["original_body"]["token"],
+                    "last_discord_call": firestore.SERVER_TIMESTAMP,
+                },
+                merge=True,
+            )
+
+        embed["components"] = [
+            {
+                "type": 1,
+                "components": [
+                    {
+                        "type": 2,
+                        "label": "To the Portal",
+                        "style": 5,
+                        "url": f"https://dev-api.dexoworlds.com/verify/{user_id}/connect?token={encoded}",
+                        "emoji": {"id": None, "name": "🪐"},
+                    },
+                ],
+            }
+        ]
+
+        if (whitelist_open or current_info.exists):
+
+            guild.collection("whitelist").document(str(info["user_id"])).set(
+                info, merge=True
+            )
+
+            guild.collection("config").document("stats").set(
+                {"n_users": firestore.Increment(1)}, merge=True
+            )
+
+
+    elif (whitelist_open or current_info.exists) and correct_channel:
         print(f"Adding to the whitelist: {info}")
 
         # current_info = guild.collection("whitelist").document(info["user_id"]).get()
