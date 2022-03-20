@@ -297,7 +297,7 @@ def add_whitelist_entry(body):
         show_connection = True
 
 
-    elif verified:
+    elif not provided_address and verified:
 
         # show the option to connect a wallet
         info["stake_address"] = "verified"
