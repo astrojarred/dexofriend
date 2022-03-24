@@ -340,7 +340,11 @@ def check_whitelist_open(guild):
             print(f"Issue connecting to Firebase: {e}")
             try_number += 1
 
-    begin_time, end_time = status.get("begin"), status.get("end")
+    if status:
+        begin_time, end_time = status.get("begin"), status.get("end")
+    else:
+        begin_time, end_time = None, None
+        
     now = dt.datetime.now(dt.timezone.utc)
 
     whitelist_open = False
