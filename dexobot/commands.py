@@ -48,3 +48,4 @@ def check_command(body):
                 "content": f"Command does not exist.", "flags": 64
             }
         }
+
