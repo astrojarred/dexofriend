@@ -285,10 +285,6 @@ def add_whitelist_entry(body):
             },
         )
 
-    embed["title"] = title
-    embed["description"] = description
-    embed["fields"] = fields
-
     if (whitelist_open or current_info.exists) and correct_channel:
         print(f"Adding to the whitelist: {info}")
 
@@ -321,8 +317,16 @@ def add_whitelist_entry(body):
                 {"n_calls": firestore.Increment(1)}, merge=True
             )
 
+        if not title:
+            title = f"✨ Congrats! Your address has been {'updated on' if current_info.exists else 'added to'} the whitelist!"
+            description = f"[**💢 Check your address on pool.pm 💢**]({poolpm})\n**[<a:arrow_right:949342031166193714>{info['stake_address']}]({poolpm})**"
+
     else:
         print("Whitelist not open or incorrect channel, not adding anything.")
+
+    embed["title"] = title
+    embed["description"] = description
+    embed["fields"] = fields
 
     print("Sending discord_update")
     success, response = helper.update_discord_message(
