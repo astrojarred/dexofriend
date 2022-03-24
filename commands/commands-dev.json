@@ -249,5 +249,78 @@
         "required": 1
       }
     ]
+  },
+  {
+    "name": "verify",
+    "type": 1,
+    "description": "Connect and verify a wallet using Nami or CCVault." 
+  },
+  {
+    "name": "add_holder_role",
+    "type": 1,
+    "description": "Add a role that will be granted to holders of a policy",
+    "options": [
+      {
+        "name": "role",
+        "description": "Role you would like to be assigned to holders.",
+        "type": 8,
+        "required": 1
+      },
+      {
+        "name": "policy_id",
+        "description": "Policy ID to verify in holders wallets.",
+        "type": 3,
+        "required": 1
+      }
+    ]
+  },
+  {
+    "name": "view_holder_roles",
+    "type": 1,
+    "description": "View roles granted to holders."
+  },
+  {
+    "name": "remove_holder_role",
+    "type": 1,
+    "description": "Remove role granted to holders of a policy",
+    "options": [
+      {
+        "name": "role",
+        "description": "Role you would like to stop assigning to holders.",
+        "type": 8,
+        "required": 1
+      }
+    ]
+  },
+  {
+    "name": "donate",
+    "type": 1,
+    "description": "Donate WL spots to support bot development. Spots will be raffled within 72h.",
+    "options": [
+      {
+        "name": "how_many",
+        "description": "How many spots you would like to donate.",
+        "type": 4,
+        "required": 1,
+        "min_value": 1
+      },
+      {
+        "name": "message",
+        "description": "Personal you want to send to the giveaway entrants.",
+        "type": 3,
+        "required": 0
+      },
+      {
+        "name": "role",
+        "description": "Role that the winners should be automatically assigned.",
+        "type": 8,
+        "required": 0
+      }
+    ]
+  },
+  {
+    "name": "help",
+    "type": 1,
+    "description": "Get help whitelisting and verifying wallets."
   }
 ]

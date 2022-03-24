@@ -80,7 +80,9 @@ def send_discord_followup(bot_token, application_id, interaction_token, payload)
     return res.ok
 
 
-def update_discord_message(application_id, interaction_token, payload, files=None, bot_token=None):
+def update_discord_message(
+    application_id, interaction_token, payload, files=None, bot_token=None
+):
 
     if not bot_token:
         bot_token = os.getenv("DISCORD_BOT_TOKEN")
@@ -155,12 +157,12 @@ def delete_original_message(application_id, interaction_token, bot_token=None):
     return res.ok, res.json()
 
 
-def post_channel_message(bot_token, channel_id, payload):
+def post_channel_message(channel_id, payload, bot_token=None):
 
     url = f"https://discord.com/api/v9/channels/{channel_id}/messages"
 
     headers = {
-        "authorization": f'Bot {os.getenv("BOT_TOKEN")}',
+        "authorization": f'Bot {os.getenv("BOT_TOKEN") if not bot_token else bot_token}',
     }
 
     print("Sending message Payload", payload)
@@ -175,12 +177,12 @@ def post_channel_message(bot_token, channel_id, payload):
     return res.json()
 
 
-def add_role(guild_id, user_id, role_id):
+def add_role(guild_id, user_id, role_id, bot_token=None):
 
     url = f"https://discord.com/api/v9/guilds/{guild_id}/members/{user_id}/roles/{role_id}"
 
     headers = {
-        "authorization": f'Bot {os.getenv("BOT_TOKEN")}',
+        "authorization": f'Bot {os.getenv("BOT_TOKEN") if not bot_token else bot_token}',
     }
 
     print(f"Adding role {role_id} to user {user_id}")
@@ -199,7 +201,7 @@ def remove_role(guild_id, user_id, role_id):
     url = f"https://discord.com/api/v9/guilds/{guild_id}/members/{user_id}/roles/{role_id}"
 
     headers = {
-        "authorization": f'Bot {os.getenv("BOT_TOKEN")}',
+        "authorization": f'Bot {os.getenv("DISCORD_BOT_TOKEN")}',
     }
 
     print(f"Adding role {role_id} to user {user_id}")
@@ -211,6 +213,91 @@ def remove_role(guild_id, user_id, role_id):
         print(f"Error sending request: {res.status_code}")
 
     return res.ok
+
+
+def get_guild_info(guild_id, bot_token=None):
+
+    url = f"https://discord.com/api/v9/guilds/{guild_id}"
+
+    headers = {
+        "authorization": f'Bot {os.getenv("DISCORD_BOT_TOKEN") if not bot_token else bot_token}',
+    }
+    print(f"Getting guild info for guild {guild_id}")
+    res = requests.get(url, headers=headers)
+
+    if res.ok:
+        print(f"Request sent successfully: {res.status_code}.")
+    else:
+        print(f"Error sending request: {res.status_code}")
+
+    return res.json()
+
+
+
+def create_channel_invite(channel_id, bot_token=None):
+
+    url = f"https://discord.com/api/v9/channels/{channel_id}/invites"
+
+    headers = {
+        "authorization": f'Bot {os.getenv("DISCORD_BOT_TOKEN") if not bot_token else bot_token}',
+    }
+
+    print(f"Adding guild info for channel {channel_id}")
+    res = requests.post(url, headers=headers, json={"max_age": 0})
+
+    if res.ok:
+        print(f"Request sent successfully: {res.status_code}.")
+    else:
+        print(f"Error sending request: {res.status_code}")
+
+    return res.json()
+
+
+def post_channel_message(message_payload, channel_id, bot_token=None):
+
+    url = f"https://discord.com/api/v9/channels/{channel_id}/messages"
+
+    headers = {
+        "authorization": f'Bot {os.getenv("DISCORD_BOT_TOKEN") if not bot_token else bot_token}',
+    }
+
+    print(f"Adding guild info for channel {channel_id}")
+    res = requests.post(url, headers=headers, json=message_payload)
+
+    if res.ok:
+        print(f"Request sent successfully: {res.status_code}.")
+    else:
+        print(f"Error sending request: {res.status_code}")
+
+    return res.json()
+
+
+def edit_channel_message(
+    channel_id, message_id, payload, files=None, bot_token=None
+):
+
+    if not bot_token:
+        bot_token = os.getenv("DISCORD_BOT_TOKEN")
+        assert bot_token
+
+    url = f"https://discord.com/api/v9/channels/{channel_id}/messages/{message_id}"
+
+    print("Sending edit message Payload", payload)
+    print("to the URL", url)
+
+    header = {
+         "authorization": f'Bot {os.getenv("BOT_TOKEN") if not bot_token else bot_token}',
+    }
+
+    res = requests.patch(url, json=payload, headers=header, files=files)
+
+    if res.ok:
+        print(f"Payload sent successfully: {res.json()}")
+    else:
+        print(f"Error sending payload: {res.json()}")
+
+    return res.ok, res.json()
+
 
 
 def get_stake_address(address):
@@ -253,7 +340,11 @@ def check_whitelist_open(guild):
             print(f"Issue connecting to Firebase: {e}")
             try_number += 1
 
-    begin_time, end_time = status.get("begin"), status.get("end")
+    if status:
+        begin_time, end_time = status.get("begin"), status.get("end")
+    else:
+        begin_time, end_time = None, None
+        
     now = dt.datetime.now(dt.timezone.utc)
 
     whitelist_open = False
@@ -284,7 +375,7 @@ def loader(text="Loading...", loading_emoji=None, public=False):
     embed = {
         "type": "rich",
         "title": f"{loading_emoji} {text}",
-        "color": 0xFF5ACD if "not authorized" not in text else 0xc8414c
+        "color": 0xFF5ACD if "not authorized" not in text else 0xC8414C,
     }
 
     if public:
@@ -480,6 +571,7 @@ def clear_whitelist(guild_db, batch_size=50):
     if n_deleted >= batch_size:
         clear_whitelist(guild_db, batch_size)
 
+
 def whitelist_to_dict(guild_db):
 
     docs = guild_db.collection("whitelist").stream()
@@ -500,6 +592,7 @@ def whitelist_to_dict(guild_db):
         whitelist[user_id] = user
 
     return whitelist
+
 
 def keep_warm():
 

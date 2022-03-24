@@ -20,6 +20,13 @@ ALL_COMMANDS = {
     "manually_remove_user": bot_manual("manually_remove_user", bot.manually_remove_user, bot.admin_loader),
     "manually_check_user": bot_manual("manually_check_user", bot.manually_check_user, bot.admin_loader),
     "set_api_key": bot_manual("set_api_key", bot.set_api_key, bot.admin_loader),
+    "verify": bot_manual("verify_loader", bot.verify_loader),
+    "verify_followup": bot_manual("verify", bot.verify),
+    "add_holder_role": bot_manual("add_holder_role", bot.add_holder_role, bot.admin_loader),
+    "view_holder_roles": bot_manual("view_holder_roles", bot.view_holder_roles, bot.admin_loader),
+    "remove_holder_role": bot_manual("remove_holder_role", bot.remove_holder_role, bot.admin_loader),
+    "donate": bot_manual("donate", bot.donate, bot.admin_loader),
+    "help": bot_manual("help", bot.help),
 }
 
 def check_command(body):
@@ -41,3 +48,4 @@ def check_command(body):
                 "content": f"Command does not exist.", "flags": 64
             }
         }
+

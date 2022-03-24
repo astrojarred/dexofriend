@@ -1,3 +1,4 @@
+from re import M
 from dexobot import helper
 
 from os import getenv
@@ -11,12 +12,13 @@ from blockfrost import BlockFrostApi, ApiError, ApiUrls
 import binascii
 import urllib.parse
 
+
 class Colors:
 
     SUCCESS = 0x09A67B
-    FAIL = 0xc8414c
+    FAIL = 0xC8414C
     INFO = 0xFF5ACD
-    STATUSQUO = 0x60d4fb
+    STATUSQUO = 0x60D4FB
 
 
 def constant(body):
@@ -35,8 +37,8 @@ def constant(body):
     embed = {
         "type": "rich",
         "title": phrase,
-        "footer": {"text": "With 💖, DexoBot"},
-        "color": Colors.STATUSQUO
+        "footer": {"text": "With 💖, DexoFriend"},
+        "color": Colors.STATUSQUO,
     }
 
     return {"embeds": [embed], "flags": 64}
@@ -78,7 +80,7 @@ def admin_loader(body):
         Payload=json.dumps(new_entry),
     )
 
-    return helper.loader("Loading... DexoBot Friend is here to help!")
+    return helper.loader("Loading... DexoFriend is here to help!")
 
 
 def whitelist(body):
@@ -115,9 +117,7 @@ def whitelist(body):
     #    error_title = "<:sadfrog:898565061239521291> You don't have permission to whitelist."
     #    error_message = "Sorry, the whitelist function is for certain roles only. Please see <#900299272996671518> for more information.\nThank you for your enthusiasm, and stay tuned!"
     if address[:4] == "addr" and len(address) < 58:
-        error_title = (
-            "😢 There was an error processing your address."
-        )
+        error_title = "😢 There was an error processing your address."
         error_message = f"Address too short!"
         fields.append(
             {
@@ -132,8 +132,8 @@ def whitelist(body):
             "type": "rich",
             "title": error_title,
             "description": error_message,
-            "footer": {"text": "With 💖, DexoBot"},
-            "color": Colors.FAIL
+            "footer": {"text": "With 💖, DexoFriend"},
+            "color": Colors.FAIL,
         }
 
         embed["fields"] = fields
@@ -211,23 +211,27 @@ def add_whitelist_entry(body):
 
     embed = {
         "type": "rich",
-        "footer": {"text": "With 💖, DexoBot"},
-        "color": Colors.FAIL
+        "footer": {"text": "With 💖, DexoFriend"},
+        "color": Colors.FAIL,
     }
 
     fields = []
+
+    # get current info on the whitelist
+    current_info = guild.collection("whitelist").document(info["user_id"]).get()
 
     if not correct_channel:
         title = "😱 Whitelist features are not allowed in this channel."
         description = "Please check with the mods if you are unsure."
 
-    elif not whitelist_open:
-        if not started:
-            title = "⏰ This whitelist is not open yet."
-            description = "Please check back later."
-        else:  # ended
-            title = "⏰ This whitelist is currently closed."
-            description = "Thanks for participating!"
+    elif not current_info.exists:
+        if not whitelist_open:
+            if not started:
+                title = "⏰ This whitelist is not open yet."
+                description = "Please check back later."
+            else:  # ended
+                title = "⏰ This whitelist is currently closed."
+                description = "Thanks for participating!"
 
     elif stake_info:
         info["stake_address"] = stake_info
@@ -236,7 +240,7 @@ def add_whitelist_entry(body):
 
         poolpm = f"https://pool.pm/{stake_info}"
 
-        title = "✨ Congrats! Your address has been added to the whitelist!"
+        title = f"✨ Congrats! Your address has been {'updated on' if current_info.exists else 'added to'} the whitelist!"
         description = f"[**💢 Check your address on pool.pm 💢**]({poolpm})\n**[<a:arrow_right:949342031166193714>{info['stake_address']}]({poolpm})**"
 
         fields.append(
@@ -285,15 +289,16 @@ def add_whitelist_entry(body):
     embed["description"] = description
     embed["fields"] = fields
 
-    if whitelist_open and correct_channel:
+    if (whitelist_open or current_info.exists) and correct_channel:
         print(f"Adding to the whitelist: {info}")
 
-        # get current info on the whitelist
-        current_info = guild.collection("whitelist").document(info["user_id"]).get()
+        # current_info = guild.collection("whitelist").document(info["user_id"]).get()
 
         if current_info.exists:
             # update the already-existign entry
-            guild.collection("whitelist").document(str(info["user_id"])).set(info, merge=True)
+            guild.collection("whitelist").document(str(info["user_id"])).set(
+                info, merge=True
+            )
 
             guild.collection("config").document("stats").set(
                 {"n_calls": firestore.Increment(1)}, merge=True
@@ -369,8 +374,8 @@ def manually_add_user(body):
 
     embed = {
         "type": "rich",
-        "footer": {"text": "With 💖, DexoBot"},
-        "color": Colors.FAIL
+        "footer": {"text": "With 💖, DexoFriend"},
+        "color": Colors.FAIL,
     }
 
     fields = []
@@ -571,10 +576,10 @@ def manually_remove_user(body):
 
     embed = {
         "type": "rich",
-        "footer": {"text": "With 💖, DexoBot"},
+        "footer": {"text": "With 💖, DexoFriend"},
         "title": title,
         "description": description,
-        "color": color
+        "color": color,
     }
 
     print("Sending discord_update")
@@ -625,8 +630,8 @@ def check_whitelist(body):
             "type": "rich",
             "title": error_title,
             "description": error_message,
-            "footer": {"text": "With 💖, DexoBot"},
-            "color": Colors.FAIL
+            "footer": {"text": "With 💖, DexoFriend"},
+            "color": Colors.FAIL,
         }
 
         print(f"ERROR: {error_title} -- {error_message}")
@@ -704,14 +709,48 @@ def check_whitelist_followup(body):
     embed = {
         "type": "rich",
         # "author": {"name": "Happy Hoppers Main Drop"},
-        "footer": {"text": "With 💖, DexoBot"},
-        "color": Colors.FAIL
+        "footer": {"text": "With 💖, DexoFriend"},
+        "color": Colors.FAIL,
     }
 
     # if WL not open yet
     if not correct_channel:
         title = "😱 Whitelist features are not allowed in this channel."
         description = "Please check with the mods if you are unsure."
+
+    elif info:
+        if not info.get("error"):
+
+            poolpm = f"https://pool.pm/{info['stake_address']}"
+            title = "✨ Found whitelisted address!"
+            description = f"[**💢 Check your address on pool.pm 💢**]({poolpm})\n**[<a:arrow_right:949342031166193714>{info['stake_address']}]({poolpm})**\n\nClick the pool.pm link above and make sure it shows the Cardano wallet you intend to send ADA from to mint."
+            embed["color"] = Colors.SUCCESS
+
+        elif info.get("method") == "donation":
+
+            title = "🎉 Almost there: Congrats Dexonaut! You've won a raffle."
+            description ="... but you still need to set an address for the whitelist. Please do so with the `/whitelist` command."
+
+        else:
+
+            title = "😢 There was an error processing the address"
+            description = f"Most likely you have provided an invalid address. Try resubmitting your address or checking if it looks correct on pool.pm.\nFor further support, please copy or screenshot this error message and open a support ticket."
+
+            fields.append(
+                {
+                    "name": "Error",
+                    "value": f"`{info.get('error')}`",
+                    "inline": False,
+                },
+            )
+
+            fields.append(
+                {
+                    "name": "Stake Address",
+                    "value": f"`{info.get('stake_address')}`",
+                    "inline": False,
+                },
+            )
 
     elif not started:
         title = "⏰ Whitelist is not open yet."
@@ -721,12 +760,17 @@ def check_whitelist_followup(body):
     else:
 
         if info:
-            if not info["error"]:
+            if not info.get("error"):
 
                 poolpm = f"https://pool.pm/{info['stake_address']}"
                 title = "✨ Found whitelisted address!"
                 description = f"[**💢 Check your address on pool.pm 💢**]({poolpm})\n**[<a:arrow_right:949342031166193714>{info['stake_address']}]({poolpm})**\n\nClick the pool.pm link above and make sure it shows the Cardano wallet you intend to send ADA from to mint."
                 embed["color"] = Colors.SUCCESS
+
+            elif info.get("method") == "donation":
+
+                title = "🎉 Almost there: Congrats Dexonaut! You've won a raffle."
+                description ="... but you still need to set an address for the whitelist. Please do so with the `/whitelist` command."
 
             else:
 
@@ -736,7 +780,7 @@ def check_whitelist_followup(body):
                 fields.append(
                     {
                         "name": "Error",
-                        "value": f"`{info['error']}`",
+                        "value": f"`{info.get('error')}`",
                         "inline": False,
                     },
                 )
@@ -744,7 +788,7 @@ def check_whitelist_followup(body):
                 fields.append(
                     {
                         "name": "Stake Address",
-                        "value": f"`{info['stake_address']}`",
+                        "value": f"`{info.get('stake_address')}`",
                         "inline": False,
                     },
                 )
@@ -812,7 +856,7 @@ def manually_check_user(body):
         print(f"Found current user info for {user_id}")
         info = current_info.to_dict()
 
-        if not info["error"]:
+        if not info.get("error"):
 
             poolpm = f"https://pool.pm/{info['stake_address']}"
             title = "✨ Found whitelisted address!"
@@ -840,7 +884,6 @@ def manually_check_user(body):
                 "inline": False,
             },
         )
-
 
         fields.append(
             {
@@ -874,11 +917,11 @@ def manually_check_user(body):
 
     embed = {
         "type": "rich",
-        "footer": {"text": "With 💖, DexoBot"},
+        "footer": {"text": "With 💖, DexoFriend"},
         "title": title,
         "description": description,
         "color": color,
-        "fields": fields
+        "fields": fields,
     }
 
     print("Sending discord_update")
@@ -939,7 +982,7 @@ def set_start_time(body):
 
     embed = {
         "type": "rich",
-        "footer": {"text": "With 💖, DexoBot"},
+        "footer": {"text": "With 💖, DexoFriend"},
         "title": "⏰ Whitlist starting time set!",
         "color": Colors.INFO,
         "fields": [
@@ -1009,7 +1052,7 @@ def set_end_time(body):
 
     embed = {
         "type": "rich",
-        "footer": {"text": "With 💖, DexoBot"},
+        "footer": {"text": "With 💖, DexoFriend"},
         "title": "🏁 Whitlist closing time set!",
         "color": Colors.INFO,
         "fields": [
@@ -1066,13 +1109,21 @@ def close_whitelist_now(body):
 
         if selection == "confirm":
 
+            info = guild.collection("config").document("times").get().to_dict()
+
+            begin = info.get("begin")
+            if not begin:
+                begin = firestore.SERVER_TIMESTAMP
+            elif begin > dt.datetime.now(dt.timezone.utc):
+                begin = firestore.SERVER_TIMESTAMP
+
             guild.collection("config").document("times").set(
-                {"begin": None, "end": firestore.SERVER_TIMESTAMP}, merge=True
+                {"begin": begin, "end": firestore.SERVER_TIMESTAMP}, merge=True
             )
 
             embed = {
                 "type": "rich",
-                "footer": {"text": "With 💖, DexoBot"},
+                "footer": {"text": "With 💖, DexoFriend"},
                 "title": "📪️ Whitlist is now Closed!",
                 "color": Colors.INFO,
                 "fields": [
@@ -1087,7 +1138,7 @@ def close_whitelist_now(body):
         else:
             embed = {
                 "type": "rich",
-                "footer": {"text": "With 💖, DexoBot"},
+                "footer": {"text": "With 💖, DexoFriend"},
                 "title": "😅 Canceled! No changes made",
                 "color": Colors.STATUSQUO,
             }
@@ -1115,7 +1166,7 @@ def close_whitelist_now(body):
                 "type": "rich",
                 "title": "Are you absolutely sure?",
                 "description": "This will close the whitelist *right now* and overwrite any start or end times you currently have set.",
-                "footer": {"text": "With 💖, DexoBot"},
+                "footer": {"text": "With 💖, DexoFriend"},
                 "color": Colors.INFO,
             }
         ],
@@ -1193,7 +1244,7 @@ def open_whitelist_now(body):
 
             embed = {
                 "type": "rich",
-                "footer": {"text": "With 💖, DexoBot"},
+                "footer": {"text": "With 💖, DexoFriend"},
                 "title": "📬️ Whitlist is now open!",
                 "color": Colors.INFO,
                 "fields": [
@@ -1208,7 +1259,7 @@ def open_whitelist_now(body):
         else:
             embed = {
                 "type": "rich",
-                "footer": {"text": "With 💖, DexoBot"},
+                "footer": {"text": "With 💖, DexoFriend"},
                 "title": "😅 Canceled! No changes made",
                 "color": Colors.STATUSQUO,
             }
@@ -1236,7 +1287,7 @@ def open_whitelist_now(body):
                 "type": "rich",
                 "title": "Are you absolutely sure?",
                 "description": "This will open the whitelist *right now* and overwrite any start or end times you currently have set.",
-                "footer": {"text": "With 💖, DexoBot"},
+                "footer": {"text": "With 💖, DexoFriend"},
                 "color": Colors.INFO,
             }
         ],
@@ -1317,7 +1368,9 @@ def get_whitelist_info(body):
             else "None set"
         )
         end_timestamp = (
-            f"<t:{int(times.get('end').timestamp())}:F>" if times.get("end") else "None set"
+            f"<t:{int(times.get('end').timestamp())}:F>"
+            if times.get("end")
+            else "None set"
         )
 
     else:
@@ -1332,7 +1385,7 @@ def get_whitelist_info(body):
 
     embed = {
         "type": "rich",
-        "footer": {"text": "With 💖, DexoBot"},
+        "footer": {"text": "With 💖, DexoFriend"},
         "title": f"🤓 Whitelist is currently **{'open' if whitelist_open else 'closed'}**",
         "description": "Whitelist info for your server:",
         "color": Colors.INFO,
@@ -1424,10 +1477,10 @@ def set_channel(body):
 
     embed = {
         "type": "rich",
-        "footer": {"text": "With 💖, DexoBot"},
+        "footer": {"text": "With 💖, DexoFriend"},
         "title": title,
         "description": description,
-        "color": color
+        "color": color,
     }
 
     success, response = helper.update_discord_message(
@@ -1474,7 +1527,12 @@ def remove_channel(body):
         title = f"🤔 Whitelist was already open in all channels"
         color = Colors.STATUSQUO
 
-    embed = {"type": "rich", "footer": {"text": "With 💖, DexoBot"}, "title": title, "color": color}
+    embed = {
+        "type": "rich",
+        "footer": {"text": "With 💖, DexoFriend"},
+        "title": title,
+        "color": color,
+    }
 
     success, response = helper.update_discord_message(
         body["original_body"]["application_id"],
@@ -1519,7 +1577,7 @@ def clear_whitelist(body):
 
             embed = {
                 "type": "rich",
-                "footer": {"text": "With 💖, DexoBot"},
+                "footer": {"text": "With 💖, DexoFriend"},
                 "title": "<a:pingpongloading:869290575118082078> Clearing whitelist.",
                 "description": "This may take a few minutes. Please be patient and don't run the command again.",
                 "color": Colors.INFO,
@@ -1551,7 +1609,7 @@ def clear_whitelist(body):
         else:
             embed = {
                 "type": "rich",
-                "footer": {"text": "With 💖, DexoBot"},
+                "footer": {"text": "With 💖, DexoFriend"},
                 "title": "😅 Canceled!",
                 "description": "As if nothing even happened.",
                 "color": Colors.STATUSQUO,
@@ -1580,7 +1638,7 @@ def clear_whitelist(body):
                 "type": "rich",
                 "title": "⚠️ Are you absolutely sure you want to erase the entire whitelist?\nPlease read this entire message very carefully!",
                 "description": "1. This will clear the entire whitelist *right now* and you can never go back.\n2. This will close the WL if it is open as a precaution, and erase any programmed start/end times you have set.\n3. If you wish, save a backup of the current state of the whitelist just in case, with the `/export_whitelist` command.",
-                "footer": {"text": "With 💖, DexoBot"},
+                "footer": {"text": "With 💖, DexoFriend"},
                 "color": Colors.INFO,
             }
         ],
@@ -1646,7 +1704,7 @@ def export_whitelist(body):
 
     wl_dict = helper.whitelist_to_dict(guild)
 
-    embed = {"type": "rich", "footer": {"text": "With 💖, DexoBot"}, "title": ""}
+    embed = {"type": "rich", "footer": {"text": "With 💖, DexoFriend"}, "title": ""}
 
     if not wl_dict:
         embed["title"] = "🤔 The whitelist is currently empty!"
@@ -1723,9 +1781,9 @@ def set_api_key(body):
 
     embed = {
         "type": "rich",
-        "footer": {"text": "With 💖, DexoBot"},
+        "footer": {"text": "With 💖, DexoFriend"},
         "title": "🔐 Successfully set API key!",
-        "color": Colors.SUCCESS
+        "color": Colors.SUCCESS,
     }
 
     success, response = helper.update_discord_message(
@@ -1740,3 +1798,665 @@ def set_api_key(body):
         print(f"ERROR: Could not update discord messages: {response}")
 
     return None
+
+
+def verify_loader(body):
+
+    user = body["member"]
+    permissions = user["permissions"]
+
+    lam = client("lambda")
+
+    # check for management permissions
+
+    new_entry = {
+        "context": "followup",
+        "data": {"name": "verify_followup"},
+        "member": user,
+        "guild_id": body["guild_id"],
+        "user_permissions": permissions,
+        "timestamp": dt.datetime.now(dt.timezone.utc).isoformat(),
+        "original_body": body,
+    }
+
+    print("invoking lambda...")
+    lam.invoke(
+        FunctionName=body["invoked-function-arn"],
+        InvocationType="Event",
+        Payload=json.dumps(new_entry),
+    )
+
+    return helper.loader("Loading... DexoFriend is here to help!")
+
+
+def verify(body):
+
+    # connect to firebase
+    import firebase_admin
+    from firebase_admin import credentials
+    from firebase_admin import firestore
+
+    import jwt
+    import secrets
+
+    print("Connecting to firestore.")
+    # Use the application default credentials
+    if not firebase_admin._apps:
+        cert = json.loads(getenv("FIREBASE_CERT"))
+        cred = credentials.Certificate(cert)
+        firebase_app = firebase_admin.initialize_app(cred)
+
+    db = firestore.client()
+
+    guild_id = body["guild_id"]
+
+    user = body["member"]
+    user_id = user["user"]["id"]
+
+    user_info = db.collection("users").document(user_id).get().to_dict()
+    wallets = []
+
+    issue_new_token = False
+    if user_info:
+        wallets = user_info.get("stake_addresses")
+        last_exp = user_info.get("jwt_exp")
+        if last_exp:
+            if last_exp - dt.datetime.now(tz=dt.timezone.utc) < dt.timedelta(
+                minutes=10
+            ):
+                issue_new_token = True
+
+    if issue_new_token:
+
+        token = secrets.token_urlsafe(16)
+
+        # create JWT with the token
+        expiration = dt.datetime.now(tz=dt.timezone.utc) + dt.timedelta(
+            days=1, minutes=10
+        )  # expires in 1hr
+        payload = {
+            "user_id": user_id,
+            "avatar": user["user"]["avatar"],
+            "name": user["user"]["username"],
+            "disc": user["user"]["discriminator"],
+            "exp": expiration,
+            "iss": "DexoFriend",
+            "guild": guild_id,
+        }
+        encoded = jwt.encode(payload, token)
+
+        # add token info to firebase
+
+        db.collection("users").document(user_id).set(
+            {
+                "last_jwt": encoded,
+                "last_secret": token,
+                "avatar": user["user"]["avatar"],
+                "username": user["user"]["username"],
+                "discriminator": user["user"]["discriminator"],
+                "jwt_exp": expiration,
+                "from_guild": guild_id,
+                "last_application_id": body["original_body"]["application_id"],
+                "last_discord_token": body["original_body"]["token"],
+                "last_discord_call": firestore.SERVER_TIMESTAMP,
+            },
+            merge=True,
+        )
+
+    else:
+        # give old token
+        encoded = user_info["last_jwt"]
+
+        # update database with discord call
+        db.collection("users").document(user_id).set(
+            {
+                "from_guild": guild_id,
+                "last_application_id": body["original_body"]["application_id"],
+                "last_discord_token": body["original_body"]["token"],
+                "last_discord_call": firestore.SERVER_TIMESTAMP,
+            },
+            merge=True,
+        )
+
+    if wallets:
+        description = f"FYI: You've already connected {len(wallets)} wallets."
+    else:
+        description = f"FYI: You haven't connected any wallets yet."
+
+    # return URL with JWT attached
+    embed = {
+        "type": "rich",
+        "footer": {"text": "With 💖, DexoFriend"},
+        "title": "🧑‍🚀 Please click the button below to manage your wallets!",
+        "description": description,
+        # "description": f"[<a:arrow_right:949342031166193714> Click me!](https://dev-api.dexoworlds.com/verify/{user_id}/connect?token={encoded})",
+        "color": Colors.INFO,
+    }
+
+    components = [
+        {
+            "type": 1,
+            "components": [
+                {
+                    "type": 2,
+                    "label": "To the Portal",
+                    "style": 5,
+                    "url": f"https://api.dexoworlds.com/verify/{user_id}/connect?token={encoded}",
+                    "emoji": {"id": None, "name": "🪐"},
+                },
+            ],
+        }
+    ]
+
+    success, response = helper.update_discord_message(
+        body["original_body"]["application_id"],
+        body["original_body"]["token"],
+        {"embeds": [embed], "components": components},
+    )
+
+    if success:
+        print(f"Successfully sent update: {embed}")
+    else:
+        print(f"ERROR: Could not update discord messages: {response}")
+
+    return None
+
+
+def add_holder_role(body):
+
+    # check the whitelist
+    import firebase_admin
+    from firebase_admin import credentials
+    from firebase_admin import firestore
+
+    print("Connecting to firestore.")
+    # Use the application default credentials
+    if not firebase_admin._apps:
+        cert = json.loads(getenv("FIREBASE_CERT"))
+        cred = credentials.Certificate(cert)
+        firebase_app = firebase_admin.initialize_app(cred)
+
+    db = firestore.client()
+
+    guild_id = body["guild_id"]
+    guild = db.collection("servers").document(guild_id)
+
+    params = helper.parse_options(body["data"]["options"])
+
+    roles = {}
+    for role in guild.collection("roles").stream():
+        roles[role.id] = role.to_dict()
+
+    new_role = params["role"]["value"]
+    new_policy = params["policy_id"]["value"]
+
+    title = ""
+    if new_role in roles.keys():
+        title = f"Updating the role policy ID."
+    else:
+        title = f"Creating new policy verification."
+
+    description = f"Role: <@&{new_role}> will be assigned to policy:\n`{new_policy}`"
+    color = Colors.STATUSQUO
+
+    # update policy ID in database
+    guild.collection("config").document("roles").set({new_role: new_policy}, merge=True)
+
+    embed = {
+        "type": "rich",
+        "footer": {"text": "With 💖, DexoFriend"},
+        "title": title,
+        "description": description,
+        "color": color,
+    }
+
+    success, response = helper.update_discord_message(
+        body["original_body"]["application_id"],
+        body["original_body"]["token"],
+        {"embeds": [embed]},
+    )
+
+    if success:
+        print(f"Successfully sent update: {embed}")
+    else:
+        print(f"ERROR: Could not update discord messages: {response}")
+
+    return None
+
+
+def view_holder_roles(body):
+
+    # check the whitelist
+    import firebase_admin
+    from firebase_admin import credentials
+    from firebase_admin import firestore
+
+    print("Connecting to firestore.")
+    # Use the application default credentials
+    if not firebase_admin._apps:
+        cert = json.loads(getenv("FIREBASE_CERT"))
+        cred = credentials.Certificate(cert)
+        firebase_app = firebase_admin.initialize_app(cred)
+
+    db = firestore.client()
+
+    guild_id = body["guild_id"]
+    guild = db.collection("servers").document(guild_id)
+
+    roles = guild.collection("config").document("roles").get().to_dict()
+
+    fields = []
+    if not roles:
+        title = "There are not currently any roles for holders set up."
+        description = "You can use the `add_holder_role` to set one up."
+        color = Colors.FAIL
+    else:
+        title = f"There are {len(roles)} holder role conditions set up."
+        description = f"Details below:"
+        color = Colors.INFO
+        for k, v in roles.items():
+            fields.append(
+                {
+                    "name": f"Policy ID: `{v}`",
+                    "value": f"Role: <@&{k}>",
+                    "inline": False,
+                }
+            )
+
+    embed = {
+        "type": "rich",
+        "footer": {"text": "With 💖, DexoFriend"},
+        "title": title,
+        "description": description,
+        "color": color,
+        "fields": fields,
+    }
+
+    success, response = helper.update_discord_message(
+        body["original_body"]["application_id"],
+        body["original_body"]["token"],
+        {"embeds": [embed]},
+    )
+
+    if success:
+        print(f"Successfully sent update: {embed}")
+    else:
+        print(f"ERROR: Could not update discord messages: {response}")
+
+    return None
+
+
+def remove_holder_role(body):
+
+    # check the whitelist
+    import firebase_admin
+    from firebase_admin import credentials
+    from firebase_admin import firestore
+
+    print("Connecting to firestore.")
+    # Use the application default credentials
+    if not firebase_admin._apps:
+        cert = json.loads(getenv("FIREBASE_CERT"))
+        cred = credentials.Certificate(cert)
+        firebase_app = firebase_admin.initialize_app(cred)
+
+    db = firestore.client()
+
+    guild_id = body["guild_id"]
+    guild = db.collection("servers").document(guild_id)
+
+    params = helper.parse_options(body["data"]["options"])
+
+    roles = guild.collection("config").document("roles").get().to_dict()
+
+    role_to_remove = params["role"]["value"]
+
+    title = ""
+    if role_to_remove not in roles.keys():
+        title = f"Role is not currently assigned to any policy ID."
+        description = "You can add a role rule with the `/add_holder_role` command."
+        color = Colors.FAIL
+    else:
+        title = f"Successfully removed role from holder verification."
+        description = f"Role: <@&{role_to_remove}> will no longer be assigned to holders of the policy ID \n`{roles[role_to_remove]}`"
+        color = Colors.SUCCESS
+
+        # remove the role / policy ID in database
+        del roles[role_to_remove]
+        guild.collection("config").document("roles").set(roles)
+
+    embed = {
+        "type": "rich",
+        "footer": {"text": "With 💖, DexoFriend"},
+        "title": title,
+        "description": description,
+        "color": color,
+    }
+
+    success, response = helper.update_discord_message(
+        body["original_body"]["application_id"],
+        body["original_body"]["token"],
+        {"embeds": [embed]},
+    )
+
+    if success:
+        print(f"Successfully sent update: {embed}")
+    else:
+        print(f"ERROR: Could not update discord messages: {response}")
+
+    return None
+
+
+def donate(body):
+    """Donate spots to the whitelist."""
+
+    # check the whitelist
+    import firebase_admin
+    from firebase_admin import credentials
+    from firebase_admin import firestore
+
+    import base64
+    from math import floor, ceil
+
+    print("Connecting to firestore.")
+    # Use the application default credentials
+    if not firebase_admin._apps:
+        cert = json.loads(getenv("FIREBASE_CERT"))
+        cred = credentials.Certificate(cert)
+        firebase_app = firebase_admin.initialize_app(cred)
+
+    db = firestore.client()
+
+    guild_id = body["guild_id"]
+    guild = db.collection("servers").document(guild_id)
+
+    params = helper.parse_options(body["data"]["options"])
+
+    n_spots = params.get("how_many")["value"]
+    role = params.get("role")["value"] if params.get("role") else None
+    message = params.get("message")["value"] if params.get("message") else None
+    winner_role = params.get("role")["value"] if params.get("role") else None
+
+    print("GOT:", n_spots, role, message)
+
+    # generate a unique ID for the giveaway, follow the following to get a base64 code
+    # https://stackoverflow.com/questions/55354229/converting-an-integer-value-to-base64-and-then-decoding-it-to-get-a-plaintext
+    donation_start = dt.datetime.now(dt.timezone.utc)
+    donation_end = donation_start + dt.timedelta(hours=72)
+
+    donation_int = int(str(guild_id) + str(int(donation_start.timestamp())))
+
+    number_bytes = donation_int.to_bytes(
+        (donation_int.bit_length() + 7) // 8, byteorder="big"
+    )
+    encoded = base64.urlsafe_b64encode(number_bytes)
+    donation_id = encoded.decode()
+
+    print(f"donation id: {donation_id}")
+
+    # set up number of spots for dexo holders and starlord holders
+    n_worlds = floor(n_spots / 2)
+    n_stars = ceil(n_spots / 2)
+
+    # get guild info
+    guild_info = helper.get_guild_info(guild_id)
+    print(guild_info)
+    guild_name = guild_info.get("name")
+    icon = guild_info.get("icon")
+    system_channel_id = guild_info.get("system_channel_id")
+
+    # generate server invite link
+    invite = helper.create_channel_invite(system_channel_id)
+    print(f"Invite info:", invite)
+    invite_url = f"https://discord.gg/{invite.get('code')}"
+
+    # get dexobot settings
+    dexobot_config = db.collection("config").document("channels").get().to_dict()
+
+    donation_start = dt.datetime.now(dt.timezone.utc)
+    donation_end = donation_start + dt.timedelta(hours=72)
+
+    # set up mention rules
+    mentions = {
+        "roles": [
+            dexobot_config.get("starlords_role"),
+            dexobot_config.get("holders_role"),
+        ]
+    }
+
+    # send discord messages (with dexobot!)
+    content = (
+        f"<@&{dexobot_config.get('holders_role')}> WL donation from {guild_name}!"
+    )
+
+    embed = {
+        "type": "rich",
+        "footer": {"text": "With 💖, DexoFriend"},
+        "title": f"{n_worlds} WL spot{'s' if n_worlds > 1 else ''} for DexoWorld Holders at {guild_name}!",
+        "description": "Use the buttons below to enter. It's helpful to join their server before the raffle ends, just in case you need to get a special role assigned.",
+        "color": 0xFF5ACD,
+        "thumbnail": {"url": f"https://cdn.discordapp.com/icons/{guild_id}/{icon}.png"},
+        "fields": [
+            {
+                "name": "Ends",
+                "value": f"<t:{int(donation_end.timestamp())}:R>",
+                "inline": False,
+            },
+            {
+                "name": "Server",
+                "value": f"`{guild_name}`",
+                "inline": False,
+            },
+            {
+                "name": "Server Invite Link",
+                "value": f"[Click here to join the server]({invite_url})",
+                "inline": False,
+            },
+        ],
+    }
+
+    if message:
+        embed["fields"].append(
+            {
+                "name": f"Message from {guild_name} team",
+                "value": message,
+                "inline": False,
+            }
+        )
+
+    holder_button = [
+        {
+            "type": 1,
+            "components": [
+                {
+                    "type": 2,
+                    "label": "Enter",
+                    "style": 1,
+                    "custom_id": f"enter-h-{donation_id}",
+                    "emoji": {"id": None, "name": "✨"},
+                },
+            ],
+        }
+    ]
+
+    starlord_button = [
+        {
+            "type": 1,
+            "components": [
+                {
+                    "type": 2,
+                    "label": "Enter",
+                    "style": 1,
+                    "custom_id": f"enter-s-{donation_id}",
+                    "emoji": {"id": None, "name": "✨"},
+                },
+            ],
+        }
+    ]
+
+    # send the discord message
+    if n_worlds:
+        holders_message = helper.post_channel_message(
+            {
+                "content": content,
+                "embeds": [embed],
+                "components": holder_button,
+                "allowed_mentions": mentions,
+            },
+            dexobot_config.get("holders_channel"),
+            getenv("DEXOBOT_TOKEN"),
+        )
+    else:
+        holders_message = None
+
+    embed[
+        "title"
+    ] = f"{n_stars} WL spot{'s' if n_stars > 1 else ''} for Dexo Starlords at {guild_name}!"
+    content = f"<@&{dexobot_config.get('starlords_role')}> WL donation from {guild_name}!"
+
+    starlord_message = helper.post_channel_message(
+        {
+            "content": content,
+            "embeds": [embed],
+            "components": starlord_button,
+            "allowed_mentions": mentions,
+        },
+        dexobot_config.get("starlords_channel"),
+        getenv("DEXOBOT_TOKEN"),
+    )
+
+    # add info to database
+    info = {
+        "done": False,
+        "guild_id": guild_id,
+        "guild_name": guild_name,
+        "donation_begin": donation_start,
+        "donation_end": donation_end,
+        "n_spots": n_worlds + n_stars,
+        "n_worlds": n_worlds,
+        "n_stars": n_stars,
+        "winner_role": winner_role,
+        "message": "thanks!",
+        "invite_url": invite_url,
+        "holders_message": holders_message,
+        "starlords_message": starlord_message,
+        "icon_url": f"https://cdn.discordapp.com/icons/{guild_id}/{icon}.png",
+    }
+
+    db.collection("donations").document(donation_id).set(info, merge=True)
+
+    success_embed = {
+        "type": "rich",
+        "footer": {"text": "With 💖, DexoFriend"},
+        "title": "Donation successful!",
+        "description": "Winners of the DexoFriend raffle will be automatically added to your whitelist in 72h. Thank you so much for your donation and for supporting DexoFriend and cardano development. If you'd like to stay in the loop on further developments, follow me (pastapleas3) on Twitter! If you have questions or feature requests, please contact me on Twitter or Discord.",
+        "color": Colors.INFO,
+        "fields": [
+            {
+                "name": "Twitter",
+                "value": "[pastapleas3](https://twitter.com/pastapleas3)",
+                "inline": False,
+            },
+            {
+                "name": "Discord",
+                "value": "pastaplease#2823",
+                "inline": False,
+            },
+        ],
+    }
+
+    success, response = helper.update_discord_message(
+        body["original_body"]["application_id"],
+        body["original_body"]["token"],
+        {"embeds": [success_embed], "flags": 64},
+    )
+
+    if success:
+        print(f"Successfully sent update: {success_embed}")
+    else:
+        print(f"ERROR: Could not update discord messages: {response}")
+
+    return None
+
+
+def help(body):
+
+    user = body["member"]
+    permissions = user["permissions"]
+
+    # check for management permissions
+    print("Checking authorization...")
+    authorized = helper.permissions.is_manager(permissions)
+     
+    if not authorized:
+        # if normal user, return standard help
+
+        embed = {
+            "type": "rich",
+            "footer": {"text": "With 💖, DexoFriend"},
+            "title": "We're here to help! Please read the following carefully.",
+            "description": "In order to run any commands, you must first type the backslash `/` character, and scroll through the list of commands (or start typing) to find the one you want.\nCheck out the information below, and reach out if you still have questions.",
+            "color": Colors.INFO,
+            "fields": [
+                {
+                    "name": "/whitelist",
+                    "value": "After activating the `/whitelist` command, you should see an `Address:` field appear. Paste a Cardano address, stake address, or ADA Handle. Then press enter! Run this again to overwrite the previous address you added.",
+                    "inline": False,
+                },
+                {
+                    "name": "/check_whitelist",
+                    "value": "Use `/check_whitelist` to check if you've already submitted an address, and if so, to confirm which one. This command takes no parameters.",
+                    "inline": False,
+                },
+                {
+                    "name": "/verify",
+                    "value": "Provides a link to our verification portal where you can connect wallets in order to get special roles for holders if the mods have set them up. These wallets will carry over across all servers that use DexoFriend!",
+                    "inline": False,
+                },
+                {
+                    "name": "Want DexoFriend in your server?",
+                    "value": "[Check out the documentation here!](https://api.dexoworlds.com/dexofriend/docs/)",
+                    "inline": False,
+                },
+                {
+                    "name": "Twitter Help",
+                    "value": "[@dexoworlds](https://twitter.com/dexoworlds)",
+                    "inline": False,
+                },
+                {
+                    "name": "DexoWorlds Discord Server",
+                    "value": "[Come hang!](https://discord.gg/beaUBWhXaq) (We also have a channel just for DexoFriend!)",
+                    "inline": False,
+                },
+            ],
+        }
+
+    else:
+        # if a mod
+
+        embed = {
+            "type": "rich",
+            "footer": {"text": "With 💖, DexoFriend"},
+            "title": "Hello Server mod! You're seeing this special help message since you have the 'manage channels' permission.",
+            "description": "For all the details about how to use DexoFriend, please see our official documentation linked below.\nAnd please consider donating WL spots if you haven't already. Thanks!",
+            "color": Colors.INFO,
+            "fields": [
+                {
+                    "name": "Official DexoFriend Docs",
+                    "value": "[Check out the documentation here!](https://api.dexoworlds.com/dexofriend/docs/)",
+                    "inline": False,
+                },
+                {
+                    "name": "Twitter Help",
+                    "value": "[@dexoworlds](https://twitter.com/dexoworlds)",
+                    "inline": False,
+                },
+                {
+                    "name": "DexoWorlds Discord Server",
+                    "value": "[Come hang!](https://discord.gg/beaUBWhXaq) (We also have a channel just for DexoFriend!)",
+                    "inline": False,
+                },
+            ],
+        }
+
+    return {"embeds": [embed], "flags": 64}
