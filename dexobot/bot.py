@@ -2377,3 +2377,86 @@ def donate(body):
         print(f"ERROR: Could not update discord messages: {response}")
 
     return None
+
+
+def help(body):
+
+    user = body["member"]
+    permissions = user["permissions"]
+
+    # check for management permissions
+    print("Checking authorization...")
+    authorized = helper.permissions.is_manager(permissions)
+     
+    if not authorized:
+        # if normal user, return standard help
+
+        embed = {
+            "type": "rich",
+            "footer": {"text": "With 💖, DexoFriend"},
+            "title": "We're here to help! Please read the following carefully.",
+            "description": "In order to run any commands, you must first type the backslash `/` character, and scroll through the list of commands (or start typing) to find the one you want.\nCheck out the information below, and reach out if you still have questions.",
+            "color": Colors.INFO,
+            "fields": [
+                {
+                    "name": "/whitelist",
+                    "value": "After activating the `/whitelist` command, you should see an `Address:` field appear. Paste a Cardano address, stake address, or ADA Handle. Then press enter! Run this again to overwrite the previous address you added.",
+                    "inline": False,
+                },
+                {
+                    "name": "/check_whitelist",
+                    "value": "Use `/check_whitelist` to check if you've already submitted an address, and if so, to confirm which one. This command takes no parameters.",
+                    "inline": False,
+                },
+                {
+                    "name": "/verify",
+                    "value": "Provides a link to our verification portal where you can connect wallets in order to get special roles for holders if the mods have set them up. These wallets will carry over across all servers that use DexoFriend!",
+                    "inline": False,
+                },
+                {
+                    "name": "Want DexoFriend in your server?",
+                    "value": "[Check out the documentation here!](https://api.dexoworlds.com/dexofriend/docs/)",
+                    "inline": False,
+                },
+                {
+                    "name": "Twitter Help",
+                    "value": "[@dexoworlds](https://twitter.com/dexoworlds)",
+                    "inline": False,
+                },
+                {
+                    "name": "DexoWorlds Discord Server",
+                    "value": "[Come hang!](https://discord.gg/beaUBWhXaq) (We also have a channel just for DexoFriend!)",
+                    "inline": False,
+                },
+            ],
+        }
+
+    else:
+        # if a mod
+
+        embed = {
+            "type": "rich",
+            "footer": {"text": "With 💖, DexoFriend"},
+            "title": "Hello Server mod! You're seeing this special help message since you have the 'manage channels' permission.",
+            "description": "For all the details about how to use DexoFriend, please see our official documentation linked below.\nAnd please consider donating WL spots if you haven't already. Thanks!",
+            "color": Colors.INFO,
+            "fields": [
+                {
+                    "name": "Official DexoFriend Docs",
+                    "value": "[Check out the documentation here!](https://api.dexoworlds.com/dexofriend/docs/)",
+                    "inline": False,
+                },
+                {
+                    "name": "Twitter Help",
+                    "value": "[@dexoworlds](https://twitter.com/dexoworlds)",
+                    "inline": False,
+                },
+                {
+                    "name": "DexoWorlds Discord Server",
+                    "value": "[Come hang!](https://discord.gg/beaUBWhXaq) (We also have a channel just for DexoFriend!)",
+                    "inline": False,
+                },
+            ],
+        }
+
+    return {"embeds": [embed], "flags": 64}

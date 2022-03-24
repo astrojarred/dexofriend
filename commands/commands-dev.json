@@ -317,5 +317,10 @@
         "required": 0
       }
     ]
+  },
+  {
+    "name": "help",
+    "type": 1,
+    "description": "Get help whitelisting and verifying wallets."
   }
 ]
