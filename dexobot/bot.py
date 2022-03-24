@@ -1929,7 +1929,7 @@ def verify(body):
         "footer": {"text": "With 💖, DexoFriend"},
         "title": "🧑‍🚀 Please click the button below to manage your wallets!",
         "description": description,
-        # "description": f"[<a:arrow_right:949342031166193714> Click me!](https://dev-api.dexoworlds.com/verify/{user_id}/connect?token={encoded})",
+        # "description": f"[<a:arrow_right:949342031166193714> Click me!](https://dev-api.dexoworlds.com/dexofriend/{user_id}/connect?token={encoded})",
         "color": Colors.INFO,
     }
 
@@ -1941,7 +1941,7 @@ def verify(body):
                     "type": 2,
                     "label": "To the Portal",
                     "style": 5,
-                    "url": f"https://api.dexoworlds.com/verify/{user_id}/connect?token={encoded}",
+                    "url": f"https://api.dexoworlds.com/dexofriend/{user_id}/connect?token={encoded}",
                     "emoji": {"id": None, "name": "🪐"},
                 },
             ],
