@@ -224,7 +224,9 @@ def add_whitelist_entry(body):
         title = "😱 Whitelist features are not allowed in this channel."
         description = "Please check with the mods if you are unsure."
 
-    elif not current_info.exists:
+    whitelist_closed = False
+    
+    if not current_info.exists:  # let someone who already whitelisted update their info
         if not whitelist_open:
             if not started:
                 title = "⏰ This whitelist is not open yet."
@@ -232,97 +234,100 @@ def add_whitelist_entry(body):
             else:  # ended
                 title = "⏰ This whitelist is currently closed."
                 description = "Thanks for participating!"
+            
+            whitelist_closed = True
 
-    elif stake_info:
-        info["stake_address"] = stake_info
-        info["ok"] = True
-        info["error"] = None
+    if not whitelist_closed:
+        if stake_info:
+            info["stake_address"] = stake_info
+            info["ok"] = True
+            info["error"] = None
 
-        poolpm = f"https://pool.pm/{stake_info}"
+            poolpm = f"https://pool.pm/{stake_info}"
 
-        title = f"✨ Congrats! Your address has been {'updated on' if current_info.exists else 'added to'} the whitelist!"
-        description = f"[**💢 Check your address on pool.pm 💢**]({poolpm})\n**[<a:arrow_right:949342031166193714>{info['stake_address']}]({poolpm})**"
-
-        fields.append(
-            {
-                "name": f"📋️ {type_provided} provided:",
-                "value": f"`{provided_address}`",
-                "inline": False,
-            },
-        )
-
-        fields.append(
-            {
-                "name": "👀 Note",
-                "value": "You can confirm your status at any time with the `/check_whitelist` command.",
-                "inline": False,
-            },
-        )
-
-        embed["color"] = Colors.SUCCESS
-
-    else:
-        info["stake_address"] = None
-        info["ok"] = False
-        info["error"] = f"Error calculating stake address: f{stake_info}."
-
-        title = "😢 There was an error processing your address!"
-        description = f"Most likely you have provided an invalid address. Try resubmitting your address or checking if it looks correct on pool.pm.\nFor further support, please copy or screenshot this error message and open a support ticket."
-
-        fields.append(
-            {
-                "name": "📋️ Provided Address",
-                "value": f"`{provided_address}`",
-                "inline": False,
-            },
-        )
-
-        fields.append(
-            {
-                "name": "❗️ Error",
-                "value": f"Error calculating stake address: `{stake_info}`.",
-                "inline": False,
-            },
-        )
-
-    if (whitelist_open or current_info.exists) and correct_channel:
-        print(f"Adding to the whitelist: {info}")
-
-        # current_info = guild.collection("whitelist").document(info["user_id"]).get()
-
-        if current_info.exists:
-            # update the already-existign entry
-            guild.collection("whitelist").document(str(info["user_id"])).set(
-                info, merge=True
-            )
-
-            guild.collection("config").document("stats").set(
-                {"n_calls": firestore.Increment(1)}, merge=True
-            )
-
-        else:
-            # if it's a first addition, add the whitelist date seperately
-            info["first_whitelisted"] = info["timestamp"]
-            guild.collection("whitelist").document(str(info["user_id"])).set(info)
-
-            # update the stats dictionary
-
-            if stake_info:
-                # only update user count if address was okay
-                guild.collection("config").document("stats").set(
-                    {"n_users": firestore.Increment(1)}, merge=True
-                )
-
-            guild.collection("config").document("stats").set(
-                {"n_calls": firestore.Increment(1)}, merge=True
-            )
-
-        if not title:
             title = f"✨ Congrats! Your address has been {'updated on' if current_info.exists else 'added to'} the whitelist!"
             description = f"[**💢 Check your address on pool.pm 💢**]({poolpm})\n**[<a:arrow_right:949342031166193714>{info['stake_address']}]({poolpm})**"
 
-    else:
-        print("Whitelist not open or incorrect channel, not adding anything.")
+            fields.append(
+                {
+                    "name": f"📋️ {type_provided} provided:",
+                    "value": f"`{provided_address}`",
+                    "inline": False,
+                },
+            )
+
+            fields.append(
+                {
+                    "name": "👀 Note",
+                    "value": "You can confirm your status at any time with the `/check_whitelist` command.",
+                    "inline": False,
+                },
+            )
+
+            embed["color"] = Colors.SUCCESS
+
+        else:
+            info["stake_address"] = None
+            info["ok"] = False
+            info["error"] = f"Error calculating stake address: f{stake_info}."
+
+            title = "😢 There was an error processing your address!"
+            description = f"Most likely you have provided an invalid address. Try resubmitting your address or checking if it looks correct on pool.pm.\nFor further support, please copy or screenshot this error message and open a support ticket."
+
+            fields.append(
+                {
+                    "name": "📋️ Provided Address",
+                    "value": f"`{provided_address}`",
+                    "inline": False,
+                },
+            )
+
+            fields.append(
+                {
+                    "name": "❗️ Error",
+                    "value": f"Error calculating stake address: `{stake_info}`.",
+                    "inline": False,
+                },
+            )
+
+        if (whitelist_open or current_info.exists) and correct_channel:
+            print(f"Adding to the whitelist: {info}")
+
+            # current_info = guild.collection("whitelist").document(info["user_id"]).get()
+
+            if current_info.exists:
+                # update the already-existign entry
+                guild.collection("whitelist").document(str(info["user_id"])).set(
+                    info, merge=True
+                )
+
+                guild.collection("config").document("stats").set(
+                    {"n_calls": firestore.Increment(1)}, merge=True
+                )
+
+            else:
+                # if it's a first addition, add the whitelist date seperately
+                info["first_whitelisted"] = info["timestamp"]
+                guild.collection("whitelist").document(str(info["user_id"])).set(info)
+
+                # update the stats dictionary
+
+                if stake_info:
+                    # only update user count if address was okay
+                    guild.collection("config").document("stats").set(
+                        {"n_users": firestore.Increment(1)}, merge=True
+                    )
+
+                guild.collection("config").document("stats").set(
+                    {"n_calls": firestore.Increment(1)}, merge=True
+                )
+
+            if not title:
+                title = f"✨ Congrats! Your address has been {'updated on' if current_info.exists else 'added to'} the whitelist!"
+                description = f"[**💢 Check your address on pool.pm 💢**]({poolpm})\n**[<a:arrow_right:949342031166193714>{info['stake_address']}]({poolpm})**"
+
+        else:
+            print("Whitelist not open or incorrect channel, not adding anything.")
 
     embed["title"] = title
     embed["description"] = description
