@@ -1,5 +1,19 @@
 # DexoFriend
 
+**Discord Mod Documentation:** https://api.dexoworlds.com/dexofriend/docs
+
+## Roadmap
+- [ ] Allow Discord log in directly on the portal
+- [ ] Add help / tutorial page for users new to using Discord Application Commands
+- [ ] Allow mods to run WL spot raffles directly on their server
+- [ ] Add mobile support for docs and verify portal
+- [ ] Allow users to manually sync their holder roles
+- [ ] Add a command for mods to add custom tags to whitelisted users
+- [ ] Set hard cap to whitelist numbers
+- [ ] Allow automatic assignment of a role to those who have successfully whitelisted
+
+
+## About + FAQs
 #### DexoFriend is a free, open source Discord bot for managing whitelists populated with Cardano addresses. DexoFriend can:
 - Set up a whitelist with opening and closing times.
 - Accept mainnet addresses, stake addresses, and ADA handles.
