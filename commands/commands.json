@@ -253,7 +253,7 @@
   {
     "name": "verify",
     "type": 1,
-    "description": "Connect and verify a wallet using Nami or CCVault." 
+    "description": "Connect and verify any Cardano wallet." 
   },
   {
     "name": "add_holder_role",
