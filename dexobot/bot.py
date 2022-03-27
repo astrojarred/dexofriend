@@ -1874,6 +1874,8 @@ def verify(body):
                 minutes=10
             ):
                 issue_new_token = True
+    else:
+        issue_new_token = True
 
     if issue_new_token:
 
