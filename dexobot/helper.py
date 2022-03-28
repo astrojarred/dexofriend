@@ -369,13 +369,14 @@ def check_whitelist_open(guild):
 def loader(text="Loading...", loading_emoji=None, public=False):
 
     if not loading_emoji:
-        # loading_emoji = "⏳️"
-        loading_emoji = "<a:pingpongloading:869290575118082078>"
+        loading_emoji = "⏳️"
+        # loading_emoji = "<a:pingpongloading:869290575118082078>"
 
     embed = {
         "type": "rich",
         "title": f"{loading_emoji} {text}",
         "color": 0xFF5ACD if "not authorized" not in text else 0xC8414C,
+        "description": "Taking more than 30s? Dismiss this message and try again.",
     }
 
     if public:
