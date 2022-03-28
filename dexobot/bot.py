@@ -2410,6 +2410,11 @@ def help(body):
             "color": Colors.INFO,
             "fields": [
                 {
+                    "name": "Official DexoFriend Help Page",
+                    "value": "[Theres even a video tutorial!](https://api.dexoworlds.com/dexofriend/help/)",
+                    "inline": False,
+                },
+                {
                     "name": "/whitelist",
                     "value": "After activating the `/whitelist` command, you should see an `Address:` field appear. Paste a Cardano address, stake address, or ADA Handle. Then press enter! Run this again to overwrite the previous address you added.",
                     "inline": False,
