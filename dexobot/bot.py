@@ -969,6 +969,8 @@ def set_start_time(body):
     guild_id = body["guild_id"]
     guild = db.collection("servers").document(guild_id)
 
+    helper.update_guild_info(db, guild_id)
+
     print("Getting params")
     # parse the input parameters
     params = helper.parse_options(body["data"]["options"])
@@ -1041,6 +1043,8 @@ def set_end_time(body):
     guild_id = body["guild_id"]
     guild = db.collection("servers").document(guild_id)
 
+    helper.update_guild_info(db, guild_id)
+
     # parse the input parameters
     params = helper.parse_options(body["data"]["options"])
 
@@ -1109,6 +1113,8 @@ def close_whitelist_now(body):
 
     guild_id = body["guild_id"]
     guild = db.collection("servers").document(guild_id)
+
+    helper.update_guild_info(db, guild_id)
 
     if body.get("message"):
         # user clicked a button
@@ -1239,6 +1245,8 @@ def open_whitelist_now(body):
     guild_id = body["guild_id"]
     guild = db.collection("servers").document(guild_id)
 
+    helper.update_guild_info(db, guild_id)
+
     if body.get("message"):
         # user clicked a button
 
@@ -1360,6 +1368,8 @@ def get_whitelist_info(body):
     guild_id = body["guild_id"]
     guild = db.collection("servers").document(guild_id)
 
+    helper.update_guild_info(db, guild_id)
+
     stats = guild.collection("config").document("stats").get().to_dict()
     times = guild.collection("config").document("times").get().to_dict()
     channel = guild.collection("config").document("channel").get().to_dict()
@@ -1460,6 +1470,8 @@ def set_channel(body):
     guild_id = body["guild_id"]
     guild = db.collection("servers").document(guild_id)
 
+    helper.update_guild_info(db, guild_id)
+
     params = helper.parse_options(body["data"]["options"])
 
     current_info = guild.collection("config").document("channel").get().to_dict()
@@ -1525,6 +1537,8 @@ def remove_channel(body):
     guild_id = body["guild_id"]
     guild = db.collection("servers").document(guild_id)
 
+    helper.update_guild_info(db, guild_id)
+
     current_info = guild.collection("config").document("channel").get().to_dict()
     current_channel = current_info.get("active")
 
@@ -1575,6 +1589,8 @@ def clear_whitelist(body):
 
     guild_id = body["guild_id"]
     guild = db.collection("servers").document(guild_id)
+
+    helper.update_guild_info(db, guild_id)
 
     if body.get("message"):
         # user clicked a button
@@ -1711,6 +1727,8 @@ def export_whitelist(body):
     guild_id = body["guild_id"]
     guild = db.collection("servers").document(guild_id)
 
+    helper.update_guild_info(db, guild_id)
+
     wl_dict = helper.whitelist_to_dict(guild)
 
     embed = {"type": "rich", "footer": {"text": "With 💖, DexoFriend"}, "title": ""}
@@ -1781,6 +1799,8 @@ def set_api_key(body):
 
     guild_id = body["guild_id"]
     guild = db.collection("servers").document(guild_id)
+
+    helper.update_guild_info(db, guild_id)
 
     params = helper.parse_options(body["data"]["options"])
     api_key = params["password"]["value"]
@@ -1992,6 +2012,9 @@ def add_holder_role(body):
     guild_id = body["guild_id"]
     guild = db.collection("servers").document(guild_id)
 
+
+    helper.update_guild_info(db, guild_id)
+
     params = helper.parse_options(body["data"]["options"])
 
     roles = {}
@@ -2054,6 +2077,9 @@ def view_holder_roles(body):
     guild_id = body["guild_id"]
     guild = db.collection("servers").document(guild_id)
 
+    # update guild info
+    helper.update_guild_info(db, guild_id)
+
     roles = guild.collection("config").document("roles").get().to_dict()
 
     fields = []
@@ -2115,6 +2141,9 @@ def remove_holder_role(body):
 
     guild_id = body["guild_id"]
     guild = db.collection("servers").document(guild_id)
+
+    # update guild info
+    helper.update_guild_info(db, guild_id)
 
     params = helper.parse_options(body["data"]["options"])
 
@@ -2180,6 +2209,9 @@ def donate(body):
 
     guild_id = body["guild_id"]
     guild = db.collection("servers").document(guild_id)
+
+    # update guild info
+    helper.update_guild_info(db, guild_id)
 
     params = helper.parse_options(body["data"]["options"])
 
