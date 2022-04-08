@@ -220,24 +220,32 @@ def add_whitelist_entry(body):
     # get current info on the whitelist
     current_info = guild.collection("whitelist").document(info["user_id"]).get()
 
+    can_add = False
+    already_on_whitelist = current_info.exists
+
+    # 3 conditions: correct_channel, whitelist_open, already_on_whitelist  => can add OR blocked
+
     if not correct_channel:
         title = "😱 Whitelist features are not allowed in this channel."
         description = "Please check with the mods if you are unsure."
 
-    whitelist_closed = False
-    
-    if not current_info.exists:  # let someone who already whitelisted update their info
-        if not whitelist_open:
-            if not started:
-                title = "⏰ This whitelist is not open yet."
-                description = "Please check back later."
-            else:  # ended
-                title = "⏰ This whitelist is currently closed."
-                description = "Thanks for participating!"
-            
-            whitelist_closed = True
+    else:
 
-    if not whitelist_closed:
+        if not already_on_whitelist:  # let someone who already whitelisted update their info
+            if not whitelist_open:
+                if not started:
+                    title = "⏰ This whitelist is not open yet."
+                    description = "Please check back later."
+                else:  # ended
+                    title = "⏰ This whitelist is currently closed."
+                    description = "Thanks for participating!"
+            else:
+                can_add = True
+
+        else:
+            can_add = True
+
+    if can_add:
         if stake_info:
             info["stake_address"] = stake_info
             info["ok"] = True
