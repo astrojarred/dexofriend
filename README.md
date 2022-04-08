@@ -3,6 +3,7 @@
 **Discord Mod Documentation:** https://api.dexoworlds.com/dexofriend/docs
 
 ## Roadmap
+- [ ] Add .txt and .csv exports in addition to .json
 - [ ] Allow Discord log in directly on the portal
 - [ ] Add help / tutorial page for users new to using Discord Application Commands
 - [ ] Allow mods to run WL spot raffles directly on their server
@@ -11,6 +12,7 @@
 - [ ] Add a command for mods to add custom tags to whitelisted users
 - [ ] Set hard cap to whitelist numbers
 - [ ] Allow automatic assignment of a role to those who have successfully whitelisted
+- [ ] Add a voting system for holders
 
 
 ## About + FAQs
