@@ -592,7 +592,11 @@ def whitelist_to_dict(guild_db):
 
         user_id = user["user_id"]
         user["first_whitelisted_unix_utc"] = int(user["first_whitelisted"].timestamp())
-        user["last_updated_unix_utc"] = int(user["timestamp"].timestamp())
+
+        try:
+            user["last_updated_unix_utc"] = int(user["timestamp"].timestamp())
+        except AttributeError:
+            user["last_updated_unix_utc"] = int(user["first_whitelisted"].timestamp())
 
         del user["first_whitelisted"]
         del user["timestamp"]
