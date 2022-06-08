@@ -1,5 +1,6 @@
 from dexobot import bot
 from dexobot.command_types import bot_command, bot_embed, bot_followup, bot_manual
+from dexobot.helper import loader
 
 ALL_COMMANDS = {
     "constant": bot_manual("constant", bot.constant),
@@ -25,6 +26,7 @@ ALL_COMMANDS = {
     "add_holder_role": bot_manual("add_holder_role", bot.add_holder_role, bot.admin_loader),
     "view_holder_roles": bot_manual("view_holder_roles", bot.view_holder_roles, bot.admin_loader),
     "remove_holder_role": bot_manual("remove_holder_role", bot.remove_holder_role, bot.admin_loader),
+    "refresh": bot_manual("refresh", bot.refresh, loader("Please wait... Refreshing your assets!")),
     "donate": bot_manual("donate", bot.donate, bot.admin_loader),
     "help": bot_manual("help", bot.help),
 }

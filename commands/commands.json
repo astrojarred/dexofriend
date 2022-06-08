@@ -321,6 +321,6 @@
   {
     "name": "help",
     "type": 1,
-    "description": "Get help whitelisting and verifying wallets :)"
+    "description": "Get help whitelisting and verifying wallets."
   }
 ]
