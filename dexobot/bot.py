@@ -58,7 +58,7 @@ def admin_loader(body):
     if not authorized:
         print("NOT AUTHORIZED")
         return helper.loader(
-            "You are not authorized to run this command", loading_emoji="🛑"
+            "You are not authorized to run this command. This command is for mods only.", loading_emoji="🛑"
         )
     else:
         print("USER AUTHORIZED :)")
