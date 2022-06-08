@@ -77,6 +77,34 @@ def admin_loader(body):
     return helper.loader("Loading... DexoFriend is here to help!")
 
 
+def refresh_loader(body):
+
+
+    user = body["member"]
+    permissions = user["permissions"]
+
+    lam = client("lambda")
+
+    new_entry = {
+        "context": "followup",
+        "data": body["data"],
+        "member": user,
+        "guild_id": body["guild_id"],
+        "user_permissions": permissions,
+        "timestamp": dt.datetime.now(dt.timezone.utc).isoformat(),
+        "original_body": body,
+    }
+
+    print("invoking lambda...")
+    lam.invoke(
+        FunctionName=body["invoked-function-arn"],
+        InvocationType="Event",
+        Payload=json.dumps(new_entry),
+    )
+
+    return helper.loader("Please sit tight, refreshing your wallets!")
+
+
 def whitelist(body):
 
     # parse the input parameters
@@ -2214,17 +2242,15 @@ def refresh(body):
     guild_id = body["guild_id"]
     guild = db.collection("servers").document(guild_id)
     user_info = db.collection("users").document(user_id)
+    user_dict = user_info.get().to_dict()
 
     roles = {}
     all_policies = []
 
-    # connecting to blockfrost
-    api = helper.load_api()
-
     print("Gathering Guild information")
 
     # get the roles if they have any
-    guild_roles = guild.reference.collection("config").document("roles").get().to_dict()
+    guild_roles = guild.collection("config").document("roles").get().to_dict()
 
     if guild_roles:
         roles[guild.id] = guild_roles
@@ -2235,9 +2261,6 @@ def refresh(body):
                 all_policies.append(policy_id)
 
     print(f"Found {len(all_policies)} policies in guild {guild.id}.")
-    print("Looping through users")
-
-    user_dict = user.to_dict()
 
     print(f"Checking user {user_dict.get('username')}#{user_dict.get('discriminator')}")
 
@@ -2263,7 +2286,7 @@ def refresh(body):
 
         return None
 
-    wallets = user_info.get("stake_addresses")
+    wallets = user_dict.get("stake_addresses")
 
     roles_added, roles_removed, user_holder_roles = helper.update_user_roles(
         guild, user_info, wallets=wallets, resync=True
@@ -2273,16 +2296,33 @@ def refresh(body):
 
     fields = []
     if user_holder_roles:
-        fields = [
+        fields.append(
             {
                 "name": "Active holder roles",
                 "value": " ".join([f"<@&{r}>" for r in user_holder_roles]),
                 "inline": False,
             }
-        ]
+        )
+    
+    if roles_added:
+        fields.append(
+            {
+                "name": "Added roles:",
+                "value": f"`{len(roles_added)}`",
+                "inline": False,
+            }
+        )
+    
+    if roles_removed:
+        fields.append(
+            {
+                "name": "Removed roles:",
+                "value": f"`{len(roles_removed)}`",
+                "inline": False,
+            }
+        )
 
-    embeds = [
-        {
+    embed = {
             "type": "rich",
             "footer": {"text": "With 💖, DexoBot"},
             "title": "Your wallets have been refreshed!",
@@ -2290,7 +2330,6 @@ def refresh(body):
             "fields": fields,
             "color": 0xFF5ACD,
         }
-    ]
 
     success, response = helper.update_discord_message(
         body["original_body"]["application_id"],

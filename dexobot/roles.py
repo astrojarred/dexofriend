@@ -1,4 +1,4 @@
-import metadata
+from dexobot import metadata
 
 DEXOWORLDS_POLICY_ID = "862cd06c4504de6114a29e0b863751ee84ad455493d43aeeb727d896"
 WORLDS_METADATA_PATH = "./data/worlds.json"
