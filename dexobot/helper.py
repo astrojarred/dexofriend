@@ -512,6 +512,13 @@ class permissions:
         return (int(user_permissions) & permission_to_check) == permission_to_check
 
 
+def update_guild_info(db, guild_id, bot_token=None):
+
+    guild_info = get_guild_info(guild_id, bot_token=bot_token)
+
+    db.collection("servers").document(guild_id).set(guild_info, merge=True)
+
+
 def check_channel(guild_db, current_channel, user_permissions):
 
     current_info = guild_db.collection("config").document("channel").get().to_dict()
@@ -585,7 +592,11 @@ def whitelist_to_dict(guild_db):
 
         user_id = user["user_id"]
         user["first_whitelisted_unix_utc"] = int(user["first_whitelisted"].timestamp())
-        user["last_updated_unix_utc"] = int(user["timestamp"].timestamp())
+
+        try:
+            user["last_updated_unix_utc"] = int(user["timestamp"].timestamp())
+        except AttributeError:
+            user["last_updated_unix_utc"] = int(user["first_whitelisted"].timestamp())
 
         del user["first_whitelisted"]
         del user["timestamp"]
