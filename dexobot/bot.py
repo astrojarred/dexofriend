@@ -220,23 +220,36 @@ def add_whitelist_entry(body):
     # get current info on the whitelist
     current_info = guild.collection("whitelist").document(info["user_id"]).get()
 
+    can_add = False
+    already_on_whitelist = current_info.exists
+
+    # 3 conditions: correct_channel, whitelist_open, already_on_whitelist  => can add OR blocked
+
     if not correct_channel:
         title = "😱 Whitelist features are not allowed in this channel."
         description = "Please check with the mods if you are unsure."
 
-    elif not current_info.exists:
-        if not whitelist_open:
-            if not started:
-                title = "⏰ This whitelist is not open yet."
-                description = "Please check back later."
-            else:  # ended
-                title = "⏰ This whitelist is currently closed."
-                description = "Thanks for participating!"
+    else:
 
-    elif stake_info:
-        info["stake_address"] = stake_info
-        info["ok"] = True
-        info["error"] = None
+        if not already_on_whitelist:  # let someone who already whitelisted update their info
+            if not whitelist_open:
+                if not started:
+                    title = "⏰ This whitelist is not open yet."
+                    description = "Please check back later."
+                else:  # ended
+                    title = "⏰ This whitelist is currently closed."
+                    description = "Thanks for participating!"
+            else:
+                can_add = True
+
+        else:
+            can_add = True
+
+    if can_add:
+        if stake_info:
+            info["stake_address"] = stake_info
+            info["ok"] = True
+            info["error"] = None
 
         poolpm = f"https://pool.pm/{stake_info}"
 
@@ -285,10 +298,6 @@ def add_whitelist_entry(body):
             },
         )
 
-    embed["title"] = title
-    embed["description"] = description
-    embed["fields"] = fields
-
     if (whitelist_open or current_info.exists) and correct_channel:
         print(f"Adding to the whitelist: {info}")
 
@@ -321,8 +330,16 @@ def add_whitelist_entry(body):
                 {"n_calls": firestore.Increment(1)}, merge=True
             )
 
+            if not title:
+                title = f"✨ Congrats! Your address has been {'updated on' if current_info.exists else 'added to'} the whitelist!"
+                description = f"[**💢 Check your address on pool.pm 💢**]({poolpm})\n**[<a:arrow_right:949342031166193714>{info['stake_address']}]({poolpm})**"
+
     else:
         print("Whitelist not open or incorrect channel, not adding anything.")
+
+    embed["title"] = title
+    embed["description"] = description
+    embed["fields"] = fields
 
     print("Sending discord_update")
     success, response = helper.update_discord_message(
@@ -880,7 +897,7 @@ def manually_check_user(body):
         fields.append(
             {
                 "name": "User",
-                "value": f"`<@{info['user_id']}>`",
+                "value": f"<@{info['user_id']}>",
                 "inline": False,
             },
         )
@@ -960,6 +977,8 @@ def set_start_time(body):
     guild_id = body["guild_id"]
     guild = db.collection("servers").document(guild_id)
 
+    helper.update_guild_info(db, guild_id)
+
     print("Getting params")
     # parse the input parameters
     params = helper.parse_options(body["data"]["options"])
@@ -1032,6 +1051,8 @@ def set_end_time(body):
     guild_id = body["guild_id"]
     guild = db.collection("servers").document(guild_id)
 
+    helper.update_guild_info(db, guild_id)
+
     # parse the input parameters
     params = helper.parse_options(body["data"]["options"])
 
@@ -1100,6 +1121,8 @@ def close_whitelist_now(body):
 
     guild_id = body["guild_id"]
     guild = db.collection("servers").document(guild_id)
+
+    helper.update_guild_info(db, guild_id)
 
     if body.get("message"):
         # user clicked a button
@@ -1230,6 +1253,8 @@ def open_whitelist_now(body):
     guild_id = body["guild_id"]
     guild = db.collection("servers").document(guild_id)
 
+    helper.update_guild_info(db, guild_id)
+
     if body.get("message"):
         # user clicked a button
 
@@ -1351,6 +1376,8 @@ def get_whitelist_info(body):
     guild_id = body["guild_id"]
     guild = db.collection("servers").document(guild_id)
 
+    helper.update_guild_info(db, guild_id)
+
     stats = guild.collection("config").document("stats").get().to_dict()
     times = guild.collection("config").document("times").get().to_dict()
     channel = guild.collection("config").document("channel").get().to_dict()
@@ -1451,6 +1478,8 @@ def set_channel(body):
     guild_id = body["guild_id"]
     guild = db.collection("servers").document(guild_id)
 
+    helper.update_guild_info(db, guild_id)
+
     params = helper.parse_options(body["data"]["options"])
 
     current_info = guild.collection("config").document("channel").get().to_dict()
@@ -1516,6 +1545,8 @@ def remove_channel(body):
     guild_id = body["guild_id"]
     guild = db.collection("servers").document(guild_id)
 
+    helper.update_guild_info(db, guild_id)
+
     current_info = guild.collection("config").document("channel").get().to_dict()
     current_channel = current_info.get("active")
 
@@ -1566,6 +1597,8 @@ def clear_whitelist(body):
 
     guild_id = body["guild_id"]
     guild = db.collection("servers").document(guild_id)
+
+    helper.update_guild_info(db, guild_id)
 
     if body.get("message"):
         # user clicked a button
@@ -1702,6 +1735,8 @@ def export_whitelist(body):
     guild_id = body["guild_id"]
     guild = db.collection("servers").document(guild_id)
 
+    helper.update_guild_info(db, guild_id)
+
     wl_dict = helper.whitelist_to_dict(guild)
 
     embed = {"type": "rich", "footer": {"text": "With 💖, DexoFriend"}, "title": ""}
@@ -1772,6 +1807,8 @@ def set_api_key(body):
 
     guild_id = body["guild_id"]
     guild = db.collection("servers").document(guild_id)
+
+    helper.update_guild_info(db, guild_id)
 
     params = helper.parse_options(body["data"]["options"])
     api_key = params["password"]["value"]
@@ -1865,6 +1902,8 @@ def verify(body):
                 minutes=10
             ):
                 issue_new_token = True
+    else:
+        issue_new_token = True
 
     if issue_new_token:
 
@@ -1981,6 +2020,9 @@ def add_holder_role(body):
     guild_id = body["guild_id"]
     guild = db.collection("servers").document(guild_id)
 
+
+    helper.update_guild_info(db, guild_id)
+
     params = helper.parse_options(body["data"]["options"])
 
     roles = {}
@@ -2043,6 +2085,9 @@ def view_holder_roles(body):
     guild_id = body["guild_id"]
     guild = db.collection("servers").document(guild_id)
 
+    # update guild info
+    helper.update_guild_info(db, guild_id)
+
     roles = guild.collection("config").document("roles").get().to_dict()
 
     fields = []
@@ -2104,6 +2149,9 @@ def remove_holder_role(body):
 
     guild_id = body["guild_id"]
     guild = db.collection("servers").document(guild_id)
+
+    # update guild info
+    helper.update_guild_info(db, guild_id)
 
     params = helper.parse_options(body["data"]["options"])
 
@@ -2169,6 +2217,9 @@ def donate(body):
 
     guild_id = body["guild_id"]
     guild = db.collection("servers").document(guild_id)
+
+    # update guild info
+    helper.update_guild_info(db, guild_id)
 
     params = helper.parse_options(body["data"]["options"])
 
@@ -2398,6 +2449,11 @@ def help(body):
             "description": "In order to run any commands, you must first type the backslash `/` character, and scroll through the list of commands (or start typing) to find the one you want.\nCheck out the information below, and reach out if you still have questions.",
             "color": Colors.INFO,
             "fields": [
+                {
+                    "name": "Official DexoFriend Help Page",
+                    "value": "[Theres even a video tutorial!](https://api.dexoworlds.com/dexofriend/help/)",
+                    "inline": False,
+                },
                 {
                     "name": "/whitelist",
                     "value": "After activating the `/whitelist` command, you should see an `Address:` field appear. Paste a Cardano address, stake address, or ADA Handle. Then press enter! Run this again to overwrite the previous address you added.",
