@@ -2262,6 +2262,28 @@ def refresh(body):
 
     print(f"Found {len(all_policies)} policies in guild {guild.id}.")
 
+    if len(all_policies) < 1:
+        embed = {
+            "type": "rich",
+            "footer": {"text": "With 💖, DexoFriend"},
+            "title": f"There are not currently any holder roles on this server.",
+            "description": "Note: You can use the command `/verify` to add wallets at any time.",
+            "color": Colors.FAIL, 
+        }
+
+        success, response = helper.update_discord_message(
+            body["original_body"]["application_id"],
+            body["original_body"]["token"],
+            {"embeds": [embed]},
+        )
+
+        if success:
+            print(f"Successfully sent update: {embed}")
+        else:
+            print(f"ERROR: Could not update discord messages: {response}")
+
+        return None
+
     print(f"Checking user {user_dict.get('username')}#{user_dict.get('discriminator')}")
 
     if not user_dict.get("stake_addresses"):
