@@ -293,6 +293,11 @@
     ]
   },
   {
+    "name": "refresh",
+    "type": 1,
+    "description": "Refresh your wallets and roles on this server." 
+  },
+  {
     "name": "donate",
     "type": 1,
     "description": "Donate WL spots to support bot development. Spots will be raffled within 72h.",

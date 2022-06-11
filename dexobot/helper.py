@@ -9,6 +9,8 @@ from blockfrost import BlockFrostApi, ApiError
 import bech32
 import datetime as dt
 
+from dexobot import roles
+
 
 # slash command helper functions
 def parse_options(options):
@@ -620,3 +622,178 @@ def keep_warm():
         firebase_app = firebase_admin.initialize_app(cred)
 
     db = firestore.client()
+
+
+
+def gather_stake_assets(stake_addresses):
+
+    api = load_api()
+
+    if not isinstance(stake_addresses, list):
+        stake_addresses = [stake_addresses]
+
+    l = {}
+
+    for stake in stake_addresses:
+
+        assets = api.account_addresses_assets(stake, gather_pages=True)
+
+        for a in assets:
+            pid = a.unit[:56]
+            aname = binascii.unhexlify(a.unit[56:]).decode("utf-8")
+            q = int(a.quantity)
+
+            if not l.get(pid):
+                l[pid] = {}
+
+            l[pid][aname] = q
+
+    return l
+
+def modify_user_role(guild_id, user_id, role_id, method="add",  bot_token=None):
+
+    if not bot_token:
+        bot_token = os.getenv("DISCORD_BOT_TOKEN")
+        assert bot_token
+
+    url = f"https://discord.com/api/v9/guilds/{guild_id}/members/{user_id}/roles/{role_id}"
+
+    header = {
+        "authorization": f"Bot {bot_token}",
+    }
+
+    if method != "add":
+        verb = "removed from"
+        res = requests.delete(url, headers=header)
+    else:
+        verb = "added to"
+        res = requests.put(url, headers=header)
+
+    if res.ok:
+        print(f"Role {verb} user: {res.text}")
+        return True
+    else:
+        print(f"Error, role not {verb} user: {res.text}")
+        return False
+
+
+def sync_user_assets(user_doc, wallets=None):
+
+    user_info = user_doc.get().to_dict()
+
+    if not wallets:
+        # connect to firebase
+        import firebase_admin
+        from firebase_admin import credentials
+        from firebase_admin import firestore
+
+        print("Connecting to firestore.")
+        # Use the application default credentials
+        if not firebase_admin._apps:
+            cert = json.loads(os.getenv("DEXO_FIREBASE_CERT"))
+            cred = credentials.Certificate(cert)
+            firebase_app = firebase_admin.initialize_app(cred)
+
+        db = firestore.client()
+
+        wallets = user_info.get("stake_addresses")
+
+    if not wallets:
+        return wallets, {} # wallets updates, polices found
+
+    # get user's assets
+    assets = gather_stake_assets(wallets)
+
+    # update assets dict
+    user_doc.set({"user_assets": assets}, merge=True)
+
+    return wallets, assets
+
+
+def update_user_roles(guild_docs, user_doc, wallets=None, resync=False):
+
+    if not isinstance(guild_docs, list):
+        guild_docs = [guild_docs]
+
+    for doc in guild_docs:
+
+        guild_id = doc.id
+        user_id = user_doc.id
+
+        holder_roles = doc.collection("config").document("roles").get().to_dict()
+
+        current_roles = get_guild_member(guild_id, user_id, roles_only=True)
+
+        if resync:
+            wallet_updates, user_assets = sync_user_assets(user_doc, wallets)
+        else:
+            user_assets = user_doc.get().to_dict().get("user_assets")
+
+        user_policies = list(user_assets.keys())
+
+        roles_added = []
+        roles_removed = []
+        user_holder_roles = []
+
+        for role_id, policy in holder_roles.items():
+
+            # if it's a special role assignment, starting with !!
+            if policy in list(roles.SPECIAL_CODES.keys()):
+                policy_function = roles.SPECIAL_CODES[policy]["function"]
+                concerned_policies = roles.SPECIAL_CODES[policy]["policies"]
+
+                # if they hold a relevant policy OR they already have the role
+                if any(item in user_policies for item in concerned_policies) or (role_id in current_roles):
+
+                    # check if the should have the role
+                    needs_role = policy_function(user_assets)
+
+                    if role_id not in current_roles and needs_role:
+                        modify_user_role(guild_id, user_id, role_id, "add")
+                        roles_added.append(role_id)
+                        user_holder_roles.append(role_id)
+                    elif role_id in current_roles and not needs_role:
+                        modify_user_role(guild_id, user_id, role_id, "remove")
+                        roles_removed.append(role_id)
+                    elif role_id in current_roles:
+                        user_holder_roles.append(role_id)
+
+            # a normal policy ID
+            else:
+                if role_id not in current_roles and policy in user_policies:
+                    modify_user_role(guild_id, user_id, role_id, "add")
+                    roles_added.append(role_id)
+                    user_holder_roles.append(role_id)
+                elif role_id in current_roles and policy not in user_policies:
+                    modify_user_role(guild_id, user_id, role_id, "remove")
+                    roles_removed.append(role_id)
+                elif role_id in current_roles:
+                    user_holder_roles.append(role_id)
+
+    return roles_added, roles_removed, user_holder_roles
+
+
+def get_guild_member(guild_id, user_id, roles_only=False, bot_token=None):
+
+    if not bot_token:
+        bot_token = os.getenv("DISCORD_BOT_TOKEN")
+        assert bot_token
+
+    url = f"https://discord.com/api/v9/guilds/{guild_id}/members/{user_id}"
+
+    header = {
+        "authorization": f"Bot {bot_token}",
+    }
+
+    res = requests.get(url, headers=header)
+
+    if not res.ok:
+        print(f"Error reaching get guild member: {res.json()}")
+        return False, {}
+
+    if roles_only:
+        return True, res.json()["roles"]
+
+    return True, res.json()
+
+

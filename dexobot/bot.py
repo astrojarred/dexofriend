@@ -1,16 +1,10 @@
-from re import M
 from dexobot import helper
 
 from os import getenv
 import datetime as dt
 import json
 
-from boto3 import resource, client
-
-# from botocore.exceptions import ClientError
-from blockfrost import BlockFrostApi, ApiError, ApiUrls
-import binascii
-import urllib.parse
+from boto3 import client
 
 
 class Colors:
@@ -81,6 +75,34 @@ def admin_loader(body):
     )
 
     return helper.loader("Loading... DexoFriend is here to help!")
+
+
+def refresh_loader(body):
+
+
+    user = body["member"]
+    permissions = user["permissions"]
+
+    lam = client("lambda")
+
+    new_entry = {
+        "context": "followup",
+        "data": body["data"],
+        "member": user,
+        "guild_id": body["guild_id"],
+        "user_permissions": permissions,
+        "timestamp": dt.datetime.now(dt.timezone.utc).isoformat(),
+        "original_body": body,
+    }
+
+    print("invoking lambda...")
+    lam.invoke(
+        FunctionName=body["invoked-function-arn"],
+        InvocationType="Event",
+        Payload=json.dumps(new_entry),
+    )
+
+    return helper.loader("Please sit tight, refreshing your wallets!")
 
 
 def whitelist(body):
@@ -2180,6 +2202,134 @@ def remove_holder_role(body):
         "description": description,
         "color": color,
     }
+
+    success, response = helper.update_discord_message(
+        body["original_body"]["application_id"],
+        body["original_body"]["token"],
+        {"embeds": [embed]},
+    )
+
+    if success:
+        print(f"Successfully sent update: {embed}")
+    else:
+        print(f"ERROR: Could not update discord messages: {response}")
+
+    return None
+
+
+def refresh(body):
+
+    user = body["member"]
+    user_id = user["user"]["id"]
+    guild_id = body["guild_id"]
+    user_roles = user["roles"]
+    user_permissions = user["permissions"]
+
+    # check the whitelist
+    import firebase_admin
+    from firebase_admin import credentials
+    from firebase_admin import firestore
+
+    print("Connecting to firestore.")
+    # Use the application default credentials
+    if not firebase_admin._apps:
+        cert = json.loads(getenv("FIREBASE_CERT"))
+        cred = credentials.Certificate(cert)
+        firebase_app = firebase_admin.initialize_app(cred)
+
+    db = firestore.client()
+
+    guild_id = body["guild_id"]
+    guild = db.collection("servers").document(guild_id)
+    user_info = db.collection("users").document(user_id)
+    user_dict = user_info.get().to_dict()
+
+    roles = {}
+    all_policies = []
+
+    print("Gathering Guild information")
+
+    # get the roles if they have any
+    guild_roles = guild.collection("config").document("roles").get().to_dict()
+
+    if guild_roles:
+        roles[guild.id] = guild_roles
+        
+        # create a list of all relevant policies
+        for policy_id in list(guild_roles.values()):
+            if policy_id not in all_policies:
+                all_policies.append(policy_id)
+
+    print(f"Found {len(all_policies)} policies in guild {guild.id}.")
+
+    print(f"Checking user {user_dict.get('username')}#{user_dict.get('discriminator')}")
+
+    if not user_dict.get("stake_addresses"):
+        embed = {
+            "type": "rich",
+            "footer": {"text": "With 💖, DexoFriend"},
+            "title": f"No wallets found.",
+            "description": "Please use the command `/verify` to add wallets.",
+            "color": Colors.FAIL, 
+        }
+        
+        success, response = helper.update_discord_message(
+            body["original_body"]["application_id"],
+            body["original_body"]["token"],
+            {"embeds": [embed]},
+        )
+
+        if success:
+            print(f"Successfully sent update: {embed}")
+        else:
+            print(f"ERROR: Could not update discord messages: {response}")
+
+        return None
+
+    wallets = user_dict.get("stake_addresses")
+
+    roles_added, roles_removed, user_holder_roles = helper.update_user_roles(
+        guild, user_info, wallets=wallets, resync=True
+    )
+
+    n_wallets = len(wallets)
+
+    fields = []
+    if user_holder_roles:
+        fields.append(
+            {
+                "name": "Active holder roles",
+                "value": " ".join([f"<@&{r}>" for r in user_holder_roles]),
+                "inline": False,
+            }
+        )
+    
+    if roles_added:
+        fields.append(
+            {
+                "name": "Added roles:",
+                "value": f"`{len(roles_added)}`",
+                "inline": False,
+            }
+        )
+    
+    if roles_removed:
+        fields.append(
+            {
+                "name": "Removed roles:",
+                "value": f"`{len(roles_removed)}`",
+                "inline": False,
+            }
+        )
+
+    embed = {
+            "type": "rich",
+            "footer": {"text": "With 💖, DexoBot"},
+            "title": "Your wallets have been refreshed!",
+            "description": f"You have a total of {n_wallets} verified wallet{'s' if n_wallets > 1 else ''}",
+            "fields": fields,
+            "color": 0xFF5ACD,
+        }
 
     success, response = helper.update_discord_message(
         body["original_body"]["application_id"],
