@@ -1024,7 +1024,7 @@ def set_start_time(body):
     embed = {
         "type": "rich",
         "footer": {"text": "With 💖, DexoFriend"},
-        "title": "⏰ Whitlist starting time set!",
+        "title": "⏰ Whitelist starting time set!",
         "color": Colors.INFO,
         "fields": [
             {
@@ -1096,7 +1096,7 @@ def set_end_time(body):
     embed = {
         "type": "rich",
         "footer": {"text": "With 💖, DexoFriend"},
-        "title": "🏁 Whitlist closing time set!",
+        "title": "🏁 Whitelist closing time set!",
         "color": Colors.INFO,
         "fields": [
             {
@@ -1169,7 +1169,7 @@ def close_whitelist_now(body):
             embed = {
                 "type": "rich",
                 "footer": {"text": "With 💖, DexoFriend"},
-                "title": "📪️ Whitlist is now Closed!",
+                "title": "📪️ Whitelist is now Closed!",
                 "color": Colors.INFO,
                 "fields": [
                     {
@@ -1292,7 +1292,7 @@ def open_whitelist_now(body):
             embed = {
                 "type": "rich",
                 "footer": {"text": "With 💖, DexoFriend"},
-                "title": "📬️ Whitlist is now open!",
+                "title": "📬️ Whitelist is now open!",
                 "color": Colors.INFO,
                 "fields": [
                     {
